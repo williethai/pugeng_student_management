@@ -17,6 +17,10 @@ class ClassAdmin(admin.ModelAdmin):
 
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Class, ClassAdmin)
+admin.site.register(Gender, Gender_Admin)
+admin.site.register(Class_Status, Class_Status_Admin)
+admin.site.register(Student_Class_Status, Student_Class_Status_Admin)
+admin.site.register(Volunteer_Status, Volunteer_Status_Admin)
 
 admin.site.site_header = "學員管理幫手";
 admin.site.site_title = "學員管理幫手";
