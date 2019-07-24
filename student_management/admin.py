@@ -5,18 +5,34 @@ from .models import *
 
 class Student_Class_Inline(admin.TabularInline):
     model  = Student_Class
-    extra  = 1
+    extra  = 0
+    
+class Class_Group_Inline(admin.TabularInline):
+    model  = Class_Group
+    extra  = 0
     
 class StudentAdmin(admin.ModelAdmin):
-    #list_display = (['name'])
+    list_display = (['name', 'clerical_name', 'date_of_birth', 'gender', 'national_id_num', 'phone_num', 'address', 'invite_person', 'emergency_contact_person', 'emergency_contact_phone', 'list_classes'])
     inlines = (Student_Class_Inline,)
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_save_and_continue'] = False
+        return super(StudentAdmin, self).changeform_view(request, object_id, extra_context=extra_context)
     #form = StudentForm
 class ClassAdmin(admin.ModelAdmin):
     #list_display = (['name', 'list_students'])
-    inlines = (Student_Class_Inline,)
-
+    inlines = (Class_Group_Inline, Student_Class_Inline, )
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_save_and_continue'] = False
+        return super(ClassAdmin, self).changeform_view(request, object_id, extra_context=extra_context)
+class ClassGroupAdmin(admin.ModelAdmin):
+    list_display = (['class_of_group', 'name', 'leader', 'assistant_leader'])
+    
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Class, ClassAdmin)
+admin.site.register(Class_Group, ClassGroupAdmin)
+
 admin.site.register(Gender, Gender_Admin)
 admin.site.register(Class_Status, Class_Status_Admin)
 admin.site.register(Student_Class_Status, Student_Class_Status_Admin)

@@ -9,7 +9,7 @@ class Gender(models.Model):
         
 class Class_Status(models.Model):
     status = models.CharField(max_length=60)
-    create_at = models.DateTimeField()
+    #create_at = models.DateTimeField()
     def __str__(self):
         return self.status
         
@@ -20,7 +20,7 @@ class Student_Class_Status(models.Model):
     
 class Volunteer_Status(models.Model):
     status = models.CharField(max_length=60)
-    create_at = models.DateTimeField()
+    #create_at = models.DateTimeField()
     def __str__(self):
         return self.status
         
