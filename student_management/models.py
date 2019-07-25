@@ -2,7 +2,7 @@ from django.db import models
 from .assist_model import *
 
 class Student(models.Model):
-    student_id = models.AutoField(primary_key=True)
+    student_id = models.AutoField(primary_key=True, verbose_name='學員編號')
     name = models.CharField(max_length=60, default='', verbose_name='姓名')
     clerical_name = models.CharField(max_length=60, default='', blank=True, verbose_name='法名')
     date_of_birth = models.DateField(null=True, blank=True, verbose_name='出生日期')
@@ -22,11 +22,11 @@ class Student(models.Model):
         verbose_name_plural = "學員"
         
 class Class(models.Model):
-    student_id = models.AutoField(primary_key=True)
+    class_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=60, default='', verbose_name='名稱')
     status = models.ForeignKey(Class_Status, on_delete=models.CASCADE, default='', related_name='class_status_set', verbose_name='狀態')
     monitor = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='class_monitor_set', verbose_name='總學員長', null=True, blank=True)
-    students = models.ManyToManyField(Student, through='Student_Class', blank=True, related_name='class_of_student', verbose_name='班中學員', null=True)
+    students = models.ManyToManyField(Student, through='Student_Class', blank=True, related_name='class_of_student', verbose_name='班中學員')
     number_of_classes = models.IntegerField(default=0, verbose_name='班總數', null=True, blank=True)
     year = models.CharField(max_length=5, default='', verbose_name='年')
     semester = models.CharField(max_length=5, verbose_name='期')
@@ -44,8 +44,12 @@ class Class(models.Model):
         verbose_name_plural = "班別"
         
 class Class_Schedule(models.Model):
-    class_to_schedule = models.ForeignKey(Class, on_delete=models.CASCADE, default='', related_name='scheduled_class_set')
-    content  = models.CharField(max_length=2000, default='')
+    class_to_schedule = models.ForeignKey(Class, on_delete=models.CASCADE, default='', related_name='scheduled_class_set', verbose_name='班別')
+    study_time = models.DateField(null=True, blank=True, default='', verbose_name='上課時間')
+    study_location = models.CharField(max_length=100, default='精舍', null=True, blank=True, verbose_name='上課地點')
+    content  = models.CharField(max_length=2000, default='', null=True, blank=True, verbose_name='上課內容')
+    def __str__(self):
+        return str(self.class_to_schedule.__str__() + '-' + str(self.study_time))
 
         
 class Class_Group(models.Model):
@@ -70,6 +74,16 @@ class Student_Class(models.Model):
     #create_at = models.DateTimeField(blank=True)
     class Meta:
         verbose_name_plural = "班中學員"
+        
+#Many-to-Many stduent & class & class schedule session group relationship
+class Student_Class_Schedule(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='in_student_class_schedule_set', blank=True, verbose_name='學員名稱')
+    class_of_student = models.ForeignKey(Class, on_delete=models.CASCADE, default='', related_name='student_of_scheduled_class', blank=True)
+    scheduled_class = models.ForeignKey(Class_Schedule, on_delete=models.CASCADE, default='', related_name='scheduled_class', blank=True, null=True, verbose_name='班')
+    present_check = models.BooleanField(default=False, verbose_name='出席')
+    #create_at = models.DateTimeField(blank=True)
+    class Meta:
+        verbose_name_plural = "班中學員出席"
 
 class Volunteer_Group(models.Model):
     student_id = models.AutoField(primary_key=True)

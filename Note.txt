@@ -1,0 +1,6 @@
+django-admin startproject pugeng_student_management
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+
+C:\Users\willie.thai\AppData\Local\Programs\Python\Python36-32\Lib\site-packages\django\contrib\admin\templates\admin

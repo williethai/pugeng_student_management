@@ -10,10 +10,21 @@ class Student_Class_Inline(admin.TabularInline):
 class Class_Group_Inline(admin.TabularInline):
     model  = Class_Group
     extra  = 0
+
+class Class_Schedule_Inline(admin.TabularInline):
+    model  = Class_Schedule
+    extra  = 0
     
 class StudentAdmin(admin.ModelAdmin):
     list_display = (['name', 'clerical_name', 'date_of_birth', 'gender', 'national_id_num', 'phone_num', 'address', 'invite_person', 'emergency_contact_person', 'emergency_contact_phone', 'list_classes'])
     inlines = (Student_Class_Inline,)
+    fields = (
+        ('name', 'clerical_name'),
+        ('date_of_birth', 'gender'),
+        ('national_id_num', 'phone_num'),
+        ('address', 'invite_person'),
+        ('emergency_contact_person', 'emergency_contact_phone'),
+    )
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
         extra_context = extra_context or {}
         extra_context['show_save_and_continue'] = False
@@ -21,7 +32,14 @@ class StudentAdmin(admin.ModelAdmin):
     #form = StudentForm
 class ClassAdmin(admin.ModelAdmin):
     #list_display = (['name', 'list_students'])
-    inlines = (Class_Group_Inline, Student_Class_Inline, )
+    inlines = (Class_Group_Inline, Class_Schedule_Inline, Student_Class_Inline, )
+    fields = (
+        ('name', 'status'),
+        ('monitor', 'number_of_classes'),
+        ('year', 'semester'),
+        ('start_date', 'end_date', 'study_time'),
+        ('introduction'),
+    )
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
         extra_context = extra_context or {}
         extra_context['show_save_and_continue'] = False
@@ -29,9 +47,14 @@ class ClassAdmin(admin.ModelAdmin):
 class ClassGroupAdmin(admin.ModelAdmin):
     list_display = (['class_of_group', 'name', 'leader', 'assistant_leader'])
     
+#class StudentClassScheduleAdmin(admin.ModelAdmin):
+#    list_display = (['class_of_group', 'name', 'leader', 'assistant_leader'])
+
+    
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Class, ClassAdmin)
 admin.site.register(Class_Group, ClassGroupAdmin)
+admin.site.register(Student_Class_Schedule)
 
 admin.site.register(Gender, Gender_Admin)
 admin.site.register(Class_Status, Class_Status_Admin)
