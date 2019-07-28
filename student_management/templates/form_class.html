@@ -1,0 +1,104 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+{% load static %}
+
+
+{% block title %}班級表格{% endblock %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />{% endblock %}
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/table.css' %}"/>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+<div id="content-related">
+    <div class="module" id="report-form-module">
+        <h2>{% trans '表格' %}</h2>
+        <h3>{% trans '學務表格' %}</h3>
+        <a href="{% url 'form_student' %}">學員</a>
+        <a href="{% url 'form_class' %}">班級</a>
+    </div>
+</div>
+
+<h1>班級總攬表</h1>
+    <form action="" method="get">
+        {{ classes.form.as_p }}
+        <input type="submit" />
+    </form>
+    {% for class_i in classes.qs %}
+        <h3>{{ class_i.to_str }}</h3>
+        <h4>狀態: {{ class_i.status }}</h4>
+        <h4>總學員長: {{ class_i.monitor }}</h4>
+        <h4>班總數: {{ class_i.number_of_classes }}</h4>
+        <h4>年度: {{ class_i.year }} - 學期: {{ class_i.semester }}</h4>
+        <h4>上課時段: {{ class_i.study_time }}</h4>
+        <h4>開始日期: {{ class_i.start_date }} - 結束日期: {{ class_i.end_date }}</h4>
+        <h4>內容簡介: {{ class_i.introduction }}</h4>
+        <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#student_table{{class_i.class_id}}" id={{class_i.class_id}}>學員列表</button>
+          <div id="student_table{{class_i.class_id}}" class="collapse">
+                <table class="table-style-three">
+                    <thead><tr>
+                      <th>姓名</th>
+                      <th>法名</th>
+                      <th>上課狀態</th>
+                      <th>電話</th>
+                      <th>生日</th>
+                      <th>性別</th>
+                      <th>地址</th>
+                      <th>介紹人</th>
+                    </tr></thead>
+                    {% for student in class_i.students.all %}
+                    <tr align="left">
+                        <td>{{ student.name }}</td>
+                        <td>{{ student.clerical_name }}</td>
+                        {% for class_for_student_i in student.in_class_student_set.all%}
+                            {% if class_for_student_i.class_of_student.class_id == class_i.class_id%}
+                                <td>{{ class_for_student_i.status }}</td>
+                            {% endif %}
+                        {% endfor %}
+                        <td>{{ student.phone_num }}</td>
+                        <td>{{ student.date_of_birth }}</td>
+                        <td>{{ student.gender }}</td>
+                        <td>{{ student.city }} - {{ student.address }}</td>
+                        <td>{{ student.invite_person }}</td>
+                      </tr>
+                    {% endfor %}
+                </table>
+          </div>
+    {% endfor %}
+    
+<!--
+    <table class="table-style-three">
+        <thead><tr>
+          <th width="70%">名稱</th>
+          <th width="70%">法名</th>
+          <th>電話</th>
+          <th>生日</th>
+          <th>性別</th>
+          <th>身分字號</th>
+          <th>地址</th>
+          <th>介紹人</th>
+          <th>緊急連絡</th>
+        </tr></thead>
+        {% for class_i in classes.qs %}
+        <tr align="left">
+            <td>{{ class_i.name }}</td>
+            <td>{{ class_i.clerical_name }}</td>
+            <td>{{ class_i.phone_num }}</td>
+            <td>{{ class_i.date_of_birth }}</td>
+            <td>{{ class_i.gender }}</td>
+            <td>{{ class_i.national_id_num }}</td>
+            <td>{{ class_i.city }} - {{ student.address }}</td>
+            <td>{{ class_i.invite_person }}</td>
+            <td>{{ class_i.emergency_contact_person }} - {{ student.emergency_contact_phone }}</td>
+          </tr>
+        {% endfor %}
+    </table>
+-->
+{% endblock %}
+
+

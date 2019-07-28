@@ -1,0 +1,58 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+{% load static %}
+
+
+{% block title %}學務表格{% endblock %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />{% endblock %}
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/table.css' %}"/>
+<div id="content-related">
+    <div class="module" id="report-form-module">
+        <h2>{% trans '表格' %}</h2>
+        <h3>{% trans '學員表格' %}</h3>
+        <a href="{% url 'form_student' %}" align="center">學員</a>
+        <a href="{% url 'form_class' %}" align="center">班級</a>
+        <a href="{% url 'form_class' %}">點名</a>
+    </div>
+</div>
+
+<h1>學生總攬表</h1>
+    
+    <form action="" method="get">
+        {{ students.form.as_p }}
+        <input type="submit" />
+    </form>
+    <table class="table-style-three">
+        <thead><tr>
+          <th">姓名</th>
+          <th>法名</th>
+          <th>電話</th>
+          <th>生日</th>
+          <th>性別</th>
+          <th>身分字號</th>
+          <th>地址</th>
+          <th>介紹人</th>
+          <th>緊急連絡</th>
+        </tr></thead>
+        {% for student in students.qs %}
+        <tr align="left">
+            <td>{{ student.name }}</td>
+            <td>{{ student.clerical_name }}</td>
+            <td>{{ student.phone_num }}</td>
+            <td>{{ student.date_of_birth }}</td>
+            <td>{{ student.gender }}</td>
+            <td>{{ student.national_id_num }}</td>
+            <td>{{ student.city }} - {{ student.address }}</td>
+            <td>{{ student.invite_person }}</td>
+            <td>{{ student.emergency_contact_person }} - {{ student.emergency_contact_phone }}</td>
+          </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
+
+

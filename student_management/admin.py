@@ -16,13 +16,14 @@ class Class_Schedule_Inline(admin.TabularInline):
     extra  = 0
     
 class StudentAdmin(admin.ModelAdmin):
-    list_display = (['name', 'clerical_name', 'date_of_birth', 'gender', 'national_id_num', 'phone_num', 'address', 'invite_person', 'emergency_contact_person', 'emergency_contact_phone', 'list_classes'])
+    list_display = (['name', 'clerical_name', 'date_of_birth', 'gender', 'national_id_num', 'phone_num', 'city', 'address', 'invite_person', 'emergency_contact_person', 'emergency_contact_phone', 'list_classes'])
     inlines = (Student_Class_Inline,)
     fields = (
         ('name', 'clerical_name'),
         ('date_of_birth', 'gender'),
         ('national_id_num', 'phone_num'),
-        ('address', 'invite_person'),
+        ('city', 'address'), 
+        ('invite_person'),
         ('emergency_contact_person', 'emergency_contact_phone'),
     )
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
@@ -60,6 +61,10 @@ admin.site.register(Gender, Gender_Admin)
 admin.site.register(Class_Status, Class_Status_Admin)
 admin.site.register(Student_Class_Status, Student_Class_Status_Admin)
 admin.site.register(Volunteer_Status, Volunteer_Status_Admin)
+admin.site.register(City, City_Admin)
+admin.site.register(StudyTime, StudyTime_Admin)
+admin.site.register(StudyYear, StudyYear_Admin)
+admin.site.register(StudySemester, StudySemester_Admin)
 
 admin.site.site_header = "學員管理幫手";
 admin.site.site_title = "學員管理幫手";

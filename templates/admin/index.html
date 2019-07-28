@@ -51,9 +51,13 @@
 
 {% block sidebar %}
 <div id="content-related">
-    <div class="module" id="recent-actions-module">
-        <h2>{% trans 'Recent actions' %}</h2>
-        <h3>{% trans 'My actions' %}</h3>
+    <div class="module" id="report-form-module">
+        <h2>{% trans '表格' %}</h2>
+        <h3>{% trans '學務表格' %}</h3>
+        <a href="{% url 'form_student' %}">學員<a>
+        <a href="{% url 'form_class' %}">班級</a>
+        <a href="{% url 'form_present_check' %}">點名</a>
+            <!--
             {% load log %}
             {% get_admin_log 10 as admin_log for_user user %}
             {% if not admin_log %}
@@ -77,7 +81,7 @@
             {% endfor %}
             </ul>
             {% endif %}
+            -->
     </div>
 </div>
 {% endblock %}
-fgafhfdh

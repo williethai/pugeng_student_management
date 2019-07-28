@@ -71,7 +71,14 @@
         {% endfor %}</ul>
         {% endif %}
     {% endblock messages %}
-
+    <div id="content-related">
+    <div class="module" id="report-form-module">
+        <h2>{% trans '表格' %}</h2>
+        <h3>{% trans '學務表格' %}</h3>
+        <a href="{% url 'form_student' %}">學員</a>
+        <a href="{% url 'form_class' %}">班級</a>
+    </div>
+</div>
     <!-- Content -->
     <div id="content" class="{% block coltype %}colM{% endblock %}">
         {% block pretitle %}{% endblock %}

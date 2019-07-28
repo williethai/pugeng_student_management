@@ -17,7 +17,6 @@
     </style>
   {% endif %}
 {% endblock %}
-
 {% block extrahead %}
 {{ block.super }}
 {{ media.js }}
@@ -34,7 +33,6 @@
 </div>
 {% endblock %}
 {% endif %}
-
 {% block coltype %}flex{% endblock %}
 
 {% block content %}
@@ -76,7 +74,7 @@
       {% if cl.formset %}
         <div>{{ cl.formset.management_form }}</div>
       {% endif %}
-
+      
       {% block result_list %}
           {% if action_form and actions_on_top and cl.show_admin_actions %}{% admin_actions %}{% endif %}
           {% result_list cl %}
