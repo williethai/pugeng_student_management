@@ -7,9 +7,6 @@ def current_year():
     return datetime.date.today().year
 
 
-def max_value_current_year(value):
-    return MaxValueValidator(current_year())(value)
-
 class Student(models.Model):
     student_id = models.AutoField(primary_key=True, verbose_name='學員編號')
     name = models.CharField(max_length=60, default='', verbose_name='姓名')
@@ -24,6 +21,7 @@ class Student(models.Model):
     invite_person = models.ForeignKey('self', on_delete=models.CASCADE, null=True, related_name='invite_person_set', blank=True, verbose_name='介紹人')
     emergency_contact_person = models.CharField(max_length=60, default='', blank=True, verbose_name='緊急聯絡人')
     emergency_contact_phone = models.CharField(max_length=20, default='', blank=True, verbose_name='緊急聯絡電話')
+    date_joined = models.DateField(null=True, blank=True, verbose_name='參加日期')
     #create_at = models.DateTimeField()
     def list_classes(self):
         return "\n".join(str(c.name + ':' + c.status.status) for c in self.class_of_student.all())
@@ -52,12 +50,14 @@ class Class(models.Model):
     study_time = models.ForeignKey(StudyTime, on_delete=models.CASCADE, null=True, blank=True, related_name='study_time_set', verbose_name='上課時間')
     #create_at = models.DateTimeField()
     introduction = models.CharField(max_length=2000, default='', blank=True, null=True)
+
+
     def list_students(self):
         return "\n".join(str(c for c in self.students.all()) )
     @property
     def to_str(self):
         return str(str(self.year) + " - " +str(self.semester) + ' - ' + self.name)
-    
+
     def __str__(self):
         return str(str(self.year) + " - " +str(self.semester) + ' - ' + self.name)
         #return self.name
@@ -84,8 +84,18 @@ class Class_Schedule(models.Model):
         return str(self.study_time.strftime('%m/%d'))
 
     def __str__(self):
-        return str(self.class_to_schedule.__str__() + '-' + str(self.study_time))
-
+        return str(self.class_to_schedule.__str__() + '-' + str(self.study_time) + '-' + str(self.class_to_schedule.study_time))
+        
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        for student_i in self.class_to_schedule.students.all():
+            Student_Class_Schedule(student=student_i, class_of_student=self.class_to_schedule, scheduled_class=self, 
+                student_class=student_i.in_class_student_set.filter(class_of_student=self.class_to_schedule.class_id)[0], note="", present_check=False).save()
+        Class.objects.filter(pk=self.class_to_schedule.class_id).update(number_of_classes=self.class_to_schedule.scheduled_class_set.all().count())
+        
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        Class.objects.filter(pk=self.class_to_schedule.class_id).update(number_of_classes=self.class_to_schedule.scheduled_class_set.all().count())
         
 class Class_Group(models.Model):
     name = models.CharField(max_length=60, default='', verbose_name='組別')
@@ -109,17 +119,30 @@ class Student_Class(models.Model):
     #create_at = models.DateTimeField(blank=True)
     class Meta:
         verbose_name_plural = "班中學員"
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        for scheduled_class_i in self.class_of_student.scheduled_class_set.all():
+            Student_Class_Schedule(student=self.student, class_of_student=self.class_of_student, scheduled_class=scheduled_class_i, 
+                student_class=self, note="", present_check=False).save()
+        
         
 #Many-to-Many stduent & class & class schedule session group relationship
 class Student_Class_Schedule(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='in_student_class_schedule_set', verbose_name='學員名稱')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='in_student_class_schedule_set')
     class_of_student = models.ForeignKey(Class, on_delete=models.CASCADE, default='', related_name='student_of_scheduled_class')
-    scheduled_class = models.ForeignKey(Class_Schedule, on_delete=models.CASCADE, default='', related_name='scheduled_class', blank=True, null=True, verbose_name='班')
+    student_class = models.ForeignKey(Student_Class, on_delete=models.CASCADE, default='', related_name='student_class_scheduled_session_set')
+    scheduled_class = models.ForeignKey(Class_Schedule, on_delete=models.CASCADE, default='', related_name='scheduled_class')
     present_check = models.BooleanField(default=False, verbose_name='出席')
-    #create_at = models.DateTimeField(blank=True)
+    #study_time = models.DateField(default='0000-00-00', verbose_name='上課時間')
+    note = models.CharField(max_length=100, default='', null=True, blank=True, verbose_name='備註')
     class Meta:
         verbose_name_plural = "班中學員出席"
+        #unique_together = ('student', 'class_of_student', 'scheduled_class')
+    def __str__(self):
+        return str(self.class_of_student.__str__() + ' - ' + self.student.__str__() + ' - ' + str(self.scheduled_class.study_time) )
 
+#class Student_Attendance_Check(models.Model):
+    
 class Volunteer_Group(models.Model):
     student_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=60, default='', verbose_name='名稱')

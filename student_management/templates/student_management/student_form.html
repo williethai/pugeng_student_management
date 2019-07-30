@@ -1,0 +1,58 @@
+<h1>學員新增-更改</h1>
+<form method="POST">{% csrf_token %}
+    <table>
+        <tr>
+            <td>Name</td>
+            <td>:</td>
+            <td>{{ form.name }}</td>
+        </tr>
+        <tr>
+            <td>clerical_name</td>
+            <td>:</td>
+            <td>{{ form.clerical_name }}</td>
+        </tr>
+        <tr>
+            <td>date_of_birth</td>
+            <td>:</td>
+            <td>{{ form.date_of_birth }}</td>
+        </tr>
+        <tr>
+            <td>gender</td>
+            <td>:</td>
+            <td>{{ form.address }}</td>
+        </tr>
+        <tr>
+            <td>national_id_num</td>
+            <td>:</td>
+            <td>{{ form.national_id_num }}</td>
+        </tr>
+        <tr>
+            <td>phone_num</td>
+            <td>:</td>
+            <td>{{ form.phone_num }}</td>
+        </tr>
+        <tr>
+            <td>address</td>
+            <td>:</td>
+            <td>{{ form.address }}</td>
+        </tr>
+        <tr>
+            <td>invite_person</td>
+            <td>:</td>
+            <td>{{ form.invite_person }}</td>
+        </tr>
+        <tr>
+            <td>emergency_contact_person</td>
+            <td>:</td>
+            <td>{{ form.emergency_contact_person }}</td>
+        </tr>
+        <tr>
+            <td>emergency_contact_phone</td>
+            <td>:</td>
+            <td>{{ form.emergency_contact_phone }}</td>
+        </tr>
+        <tr>
+            <td><input type="submit" value="Save"></td>
+        </tr>
+    </table>
+</form>

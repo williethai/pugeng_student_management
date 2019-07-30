@@ -25,6 +25,7 @@ class StudentAdmin(admin.ModelAdmin):
         ('city', 'address'), 
         ('invite_person'),
         ('emergency_contact_person', 'emergency_contact_phone'),
+        ('date_joined'),
     )
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
         extra_context = extra_context or {}
@@ -47,15 +48,19 @@ class ClassAdmin(admin.ModelAdmin):
         return super(ClassAdmin, self).changeform_view(request, object_id, extra_context=extra_context)
 class ClassGroupAdmin(admin.ModelAdmin):
     list_display = (['class_of_group', 'name', 'leader', 'assistant_leader'])
-    
-#class StudentClassScheduleAdmin(admin.ModelAdmin):
-#    list_display = (['class_of_group', 'name', 'leader', 'assistant_leader'])
+
+class ClassScheduleAdmin(admin.ModelAdmin):
+    list_display = (['id', '__str__'])
+
+class StudentClassScheduleAdmin(admin.ModelAdmin):
+    list_display = (['class_of_student', 'student', 'present_check'])
 
     
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Class, ClassAdmin)
 admin.site.register(Class_Group, ClassGroupAdmin)
 admin.site.register(Student_Class_Schedule)
+admin.site.register(Class_Schedule, ClassScheduleAdmin)
 
 admin.site.register(Gender, Gender_Admin)
 admin.site.register(Class_Status, Class_Status_Admin)

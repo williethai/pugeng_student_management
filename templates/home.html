@@ -1,0 +1,11 @@
+{% block title %}首頁{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+  您好, {{ user.username }}!
+  <a href="{% url 'student_new' %}">Create New Student</a><br><br>
+{% else %}
+  <p>您還沒登入</p>
+  <a href="{% url 'login' %}">login</a>
+{% endif %}
+{% endblock %}
