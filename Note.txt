@@ -4,3 +4,9 @@ python manage.py createsuperuser
 python manage.py runserver
 
 C:\Users\willie.thai\AppData\Local\Programs\Python\Python36-32\Lib\site-packages\django\contrib\admin\templates\admin
+
+<script type="text/javascript" src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+
+chrome://flags/#unsafely-treat-insecure-origin-as-secure
+
+https://medium.com/@Carmichaelize/enabling-the-microphone-camera-in-chrome-for-local-unsecure-origins-9c90c3149339

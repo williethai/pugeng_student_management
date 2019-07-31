@@ -11,15 +11,6 @@
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/table.css' %}"/>
-<div id="content-related">
-    <div class="module" id="report-form-module">
-        <h2>{% trans '表格' %}</h2>
-        <h3>{% trans '學員表格' %}</h3>
-        <a href="{% url 'form_student' %}" align="center">學員</a>
-        <a href="{% url 'form_class' %}" align="center">班級</a>
-        <a href="{% url 'form_class' %}">點名</a>
-    </div>
-</div>
 
 <h1>學生總攬表</h1>
     

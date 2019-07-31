@@ -139,7 +139,11 @@ class Student_Class_Schedule(models.Model):
         verbose_name_plural = "班中學員出席"
         #unique_together = ('student', 'class_of_student', 'scheduled_class')
     def __str__(self):
-        return str(self.class_of_student.__str__() + ' - ' + self.student.__str__() + ' - ' + str(self.scheduled_class.study_time) )
+        return str(self.id) + ' - ' + str(self.class_of_student.__str__() + ' - ' + self.student.__str__() + ' - ' + str(self.scheduled_class.study_time) )
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        present=Student_Class_Schedule.objects.filter(student=self.student).filter(class_of_student=self.class_of_student).filter(present_check=True).all().count()
+        Student_Class.objects.filter(student=self.student).filter(class_of_student=self.class_of_student).update(present_check=present)
 
 #class Student_Attendance_Check(models.Model):
     

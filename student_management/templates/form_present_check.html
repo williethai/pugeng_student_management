@@ -11,21 +11,16 @@
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/table.css' %}"/>
+<script src="{% static 'js/restful.js' %}"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-<div id="content-related">
-    <div class="module" id="report-form-module">
-        <h2>{% trans '表格' %}</h2>
-        <h3>{% trans '學務表格' %}</h3>
-        <a href="{% url 'form_student' %}">學員</a>
-        <a href="{% url 'form_class' %}">班級</a>
-        <a href="{% url 'form_class' %}">點名</a>
-    </div>
-</div>
-
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <h1>各班點名表</h1>
+    <div>
+       <button onclick="send()">click me </button> 
+    </div>
     <form action="" method="get">
         {{ classes.form.as_p }}
         <input type="submit" />
@@ -35,10 +30,11 @@
         <h4>狀態: {{ class_i.status }}</h4>
         <h4>總學員長: {{ class_i.monitor }}</h4>
         <h4>上課時段: {{ class_i.study_time }}</h4>
+        <h4>學員總數: {{ class_i.students.all.count }}</h4>
         <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#studentpresent_table{{class_i.class_id}}" id={{class_i.class_id}}>點名列表</button>
           <div id="studentpresent_table{{class_i.class_id}}" class="collapse">
                 <table class="table-style-three">
-                    <thead><tr>
+                    <thead align="center"><tr>
                         <th>姓名</th>
                         <th>法名</th>
                         {% for scheduled_class_i in class_i.scheduled_class_set.all %}
@@ -47,12 +43,16 @@
                     </tr></thead>
                     {% for student in class_i.students.all %}
                         {% for class_for_student_i in student.in_class_student_set.all%}
-                            {% if "上課中" == class_for_student_i.status.status and class_for_student_i.class_of_student.class_id == class_i.class_id%}
-                                <tr align="left">
+                            {% if "學習中" == class_for_student_i.status.status and class_for_student_i.class_of_student.class_id == class_i.class_id%}
+                                <tr align="center">
                                     <td>{{ student.name }}</td>
                                     <td>{{ student.clerical_name }}</td>
-                                    {% for i in class_i.scheduled_class_set.all %}
-                                        <td></td>
+                                    {% for scheduled_class_i in class_i.scheduled_class_set.all %}
+                                        {% for student_class_schedule_i in scheduled_class_i.scheduled_class.all %}
+                                            {% if student_class_schedule_i.student.student_id == student.student_id and student_class_schedule_i.class_of_student.class_id == class_i.class_id%}
+                                                    <td><form action="" method="POST">{% csrf_token %}<input type="checkbox" {% if student_class_schedule_i.present_check%}checked{% endif %} value={{student_class_schedule_i.id}} onChange="send(this)"></form></td>
+                                            {% endif %}
+                                        {% endfor %}
                                     {% endfor %}
                                 </tr>
                             {% endif %}
@@ -62,34 +62,6 @@
           </div>
     {% endfor %}
     
-<!--
-    <table class="table-style-three">
-        <thead><tr>
-          <th width="70%">名稱</th>
-          <th width="70%">法名</th>
-          <th>電話</th>
-          <th>生日</th>
-          <th>性別</th>
-          <th>身分字號</th>
-          <th>地址</th>
-          <th>介紹人</th>
-          <th>緊急連絡</th>
-        </tr></thead>
-        {% for class_i in classes.qs %}
-        <tr align="left">
-            <td>{{ class_i.name }}</td>
-            <td>{{ class_i.clerical_name }}</td>
-            <td>{{ class_i.phone_num }}</td>
-            <td>{{ class_i.date_of_birth }}</td>
-            <td>{{ class_i.gender }}</td>
-            <td>{{ class_i.national_id_num }}</td>
-            <td>{{ class_i.city }} - {{ student.address }}</td>
-            <td>{{ class_i.invite_person }}</td>
-            <td>{{ class_i.emergency_contact_person }} - {{ student.emergency_contact_phone }}</td>
-          </tr>
-        {% endfor %}
-    </table>
--->
 {% endblock %}
 
 

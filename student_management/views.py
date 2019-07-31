@@ -4,7 +4,19 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 
+from rest_framework import generics
+from rest_framework.generics import GenericAPIView
+from rest_framework.mixins import UpdateModelMixin
+from rest_framework.viewsets import ModelViewSet
+from rest_framework import serializers
+
+
 from .models import *
+
+class StudentClassScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Student_Class_Schedule
+        fields = '__all__'
 
 def form_student(request):
     #students = Student.objects.all()
@@ -24,10 +36,30 @@ def form_class(request):
 def form_present_check(request):
     classes = ClassStudentPresentFilter(request.GET, queryset=Class.objects.all())
     
+    if request.method == 'POST':
+        print('form_present_check')
+        
     context = {
         'classes': classes,
     }
     return render(request, 'form_present_check.html', context=context)
+
+def check_in_qrcode(request):
+    return render(request, 'check_in_qrcode.html')
+
+class StudentClassSchedulePartialUpdateView(GenericAPIView, UpdateModelMixin):
+
+    queryset = Student_Class_Schedule.objects.all()
+    serializer_class = StudentClassScheduleSerializer
+
+    def put(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+        
+    
+    #def perform_update(self, serializer):
+    #    instance = serializer.save()
+    #    self.post_save(instance)
+        
 class HomePageView(TemplateView):
     template_name = 'home.html'
     
