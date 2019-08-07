@@ -1,0 +1,62 @@
+{% load static %}
+<script src="{% static 'js/qrious.js' %}"></script>
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+.tg .tg-v3c0{font-size:22px;background-color:#ffffff;border-color:#000000;text-align:left;vertical-align:top}
+.tg .tg-jilt{font-weight:bold;font-size:22px;background-color:#ffffff;border-color:#000000;text-align:left;vertical-align:top}
+    @media print {
+    table {
+        page-break-inside: avoid;
+    }
+}
+</style>
+{% for student_class_i in student_class %}
+<table class="tg" style="undefined;table-layout: fixed; width: 783px">
+<colgroup>
+<col style="width: 78px">
+<col style="width: 151px">
+<col style="width: 161px">
+<col style="width: 81px">
+<col style="width: 151px">
+<col style="width: 161px">
+</colgroup>
+  <tr>
+    <th class="tg-jilt">班別:</th>
+    <th class="tg-v3c0" colspan="2">{{student_class_i.class_of_student.name}}</th>
+    <th class="tg-jilt">班別:</th>
+    <th class="tg-v3c0" colspan="2">{{student_class_i.class_of_student.name}}</th>
+  </tr>
+  <tr>
+    <td class="tg-jilt">組別:</td>
+    <td class="tg-v3c0">group</td>
+    <td class="tg-v3c0" rowspan="3"><canvas id="qr_right{{student_class_i.student_qr_code}}"></canvas></td>
+    <td class="tg-jilt">組別:</td>
+    <td class="tg-v3c0">group</td>
+    <td class="tg-v3c0" rowspan="3"><canvas id="qr_left{{student_class_i.student_qr_code}}"></canvas></td>
+  </tr>
+<script>
+    (function() {
+        var qr = new QRious({
+            element: document.getElementById('qr_right{{student_class_i.student_qr_code}}'),
+            value: '{{student_class_i.student_qr_code}}'
+        });
+    })();
+    (function() {
+        var qr = new QRious({
+            element: document.getElementById('qr_left{{student_class_i.student_qr_code}}'),
+            value: '{{student_class_i.student_qr_code}}'
+        });
+    })();
+</script>
+  <tr>
+    <td class="tg-jilt" rowspan="2">姓名:</td>
+    <td class="tg-v3c0" rowspan="2">{{student_class_i.student.name}}</td>
+    <td class="tg-jilt" rowspan="2">姓名:</td>
+    <td class="tg-v3c0" rowspan="2">{{student_class_i.student.name}}</td>
+  </tr>
+  <tr>
+  </tr>
+</table><br>
+{% endfor %}

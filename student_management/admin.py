@@ -6,6 +6,7 @@ from .models import *
 class Student_Class_Inline(admin.TabularInline):
     model  = Student_Class
     extra  = 0
+    readonly_fields = ["student_qr_code"]
     
 class Class_Group_Inline(admin.TabularInline):
     model  = Class_Group
@@ -47,7 +48,7 @@ class ClassAdmin(admin.ModelAdmin):
         extra_context['show_save_and_continue'] = False
         return super(ClassAdmin, self).changeform_view(request, object_id, extra_context=extra_context)
 class ClassGroupAdmin(admin.ModelAdmin):
-    list_display = (['class_of_group', 'name', 'leader', 'assistant_leader'])
+    list_display = (['class_of_group', 'name', 'leader', 'assistant_leader1'])
 
 class ClassScheduleAdmin(admin.ModelAdmin):
     list_display = (['id', '__str__'])
@@ -70,6 +71,8 @@ admin.site.register(City, City_Admin)
 admin.site.register(StudyTime, StudyTime_Admin)
 admin.site.register(StudyYear, StudyYear_Admin)
 admin.site.register(StudySemester, StudySemester_Admin)
+
+admin.site.register(Student_Class)
 
 admin.site.site_header = "學員管理幫手";
 admin.site.site_title = "學員管理幫手";

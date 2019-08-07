@@ -4,7 +4,8 @@
 {% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/login.css" %}" />
 {{ form.media }}
 {% endblock %}
-
+{% block welcome_log %}{% endblock %}
+{% block menu_bar %}{% endblock %}
 {% block bodyclass %}{{ block.super }} login{% endblock %}
 
 {% block usertools %}{% endblock %}

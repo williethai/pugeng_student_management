@@ -8,44 +8,85 @@
 {% block coltype %}colMS{% endblock %}
 
 {% block bodyclass %}{{ block.super }} dashboard{% endblock %}
-
+{% block breadcrumbs %}{% endblock %}
+{% block menu_active_form_class %}class='active'{% endblock %}
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/table.css' %}"/>
 <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#aabcfe;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#aabcfe;color:#669;background-color:#e8edff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#aabcfe;color:#039;background-color:#b9c9fe;}
+.tg .tg-hmp3{background-color:#D2E4FC;text-align:left;vertical-align:top}
+.tg .tg-baqh{text-align:center;vertical-align:top}
+.tg .tg-mb3i{background-color:#D2E4FC;text-align:right;vertical-align:top}
+.tg .tg-lqy6{text-align:right;vertical-align:top}
+.tg .tg-0lax{text-align:left;vertical-align:top}
+</style>
 <h1>班級總攬表</h1>
-    <form action="" method="get">
-        {{ classes.form.as_p }}
+    <form action="" method="get" style="width:810px"><fieldset><legend><strong>篩選</strong></legend>
+        {{ classes.form.as_table }}
         <input type="submit" />
-    </form>
+    </fieldset></form>
+    <br>
+    <div>
     {% for class_i in classes.qs %}
-        <h3>{{ class_i.to_str }}</h3>
-        <h4>狀態: {{ class_i.status }}</h4>
-        <h4>總學員長: {{ class_i.monitor }}</h4>
-        <h4>班總數: {{ class_i.number_of_classes }}</h4>
-        <h4>學員總數: {{ class_i.students.all.count }}</h4>
-        <h4>年度: {{ class_i.year }} - 學期: {{ class_i.semester }}</h4>
-        <h4>上課時段: {{ class_i.study_time }}</h4>
-        <h4>開始日期: {{ class_i.start_date }} - 結束日期: {{ class_i.end_date }}</h4>
-        <h4>內容簡介: {{ class_i.introduction }}</h4>
+        <table class="tg" style="undefined;table-layout: fixed; width: 810px">
+            <colgroup>
+                <col style="width: 201px">
+                <col style="width: 151px">
+                <col style="width: 251px">
+                <col style="width: 201px">
+            </colgroup>
+            <tr>
+                <td colspan="4"><strong>{{ class_i.to_str }}</strong></td>
+            </tr>
+            <tr>
+                <td>狀態: {{ class_i.status }}</td>
+                <td>總學員長: {{ class_i.monitor }}</td>
+                <td>班總數: {{ class_i.number_of_classes }}</td>
+                <td>學員總數: {{ class_i.students.all.count }}</td>
+            </tr>
+            <tr>
+                <td>年度: {{ class_i.year }} - 學期: {{ class_i.semester }}</td>
+                <td>上課時段: {{ class_i.study_time }}</td>
+                <td>{% if class_i.start_date != None %}開始日期: {{ class_i.get_start_date }}{%endif%} {% if class_i.end_date != None %}- 結束日期: {{ class_i.get_end_date }}{%endif%}</td>
+                <td>內容簡介: {{ class_i.introduction }}</td>
+            </tr>
+        </table>
+        <a href="{% url 'name_card_pdf' id=class_i.class_id%}"><h4><b>名牌產生</b></h4></a>
         <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#student_table{{class_i.class_id}}" id={{class_i.class_id}}>學員列表</button>
-          <div id="student_table{{class_i.class_id}}" class="collapse">
-                <table class="table-style-three">
-                    <thead><tr>
+            <div id="student_table{{class_i.class_id}}" class="collapse">
+                <table class="tg" style="undefined;table-layout: fixed; width: 1219px">
+                        <colgroup>
+                            <col style="width: 51px">
+                            <col style="width: 51px">
+                            <col style="width: 51px">
+                            <col style="width: 51px">
+                            <col style="width: 41px">
+                            <col style="width: 121px">
+                            <col style="width: 81px">
+                            <col style="width: 31px">
+                            <col style="width: 321px">
+                            <col style="width: 71px">
+                        </colgroup>
+                    <thead>
+                    <tr class="tg-baqh">
                       <th>姓名</th>
                       <th>法名</th>
                       <th>上課狀態</th>
+                      <th>組別</th>
                       <th>出席率</th>
                       <th>電話</th>
                       <th>生日</th>
                       <th>性別</th>
                       <th>地址</th>
                       <th>介紹人</th>
-                      
-                    </tr></thead>
+                    </tr>
+                    </thead>
                     {% for student in class_i.students.all %}
                     <tr align="left">
                         <td>{{ student.name }}</td>
@@ -53,20 +94,21 @@
                         {% for class_for_student_i in student.in_class_student_set.all%}
                             {% if class_for_student_i.class_of_student.class_id == class_i.class_id%}
                                 <td>{{ class_for_student_i.status }}</td>
-                                <td>{{ class_for_student_i.present_check }}</td>
+                                <td>{% if class_for_student_i.group_of_student != None %}{{ class_for_student_i.group_of_student }}{% endif%}</td>
+                                <td>{{ class_for_student_i.present_check }}/{{ class_i.number_of_classes }}</td>
                             {% endif %}
                         {% endfor %}
                         <td>{{ student.phone_num }}</td>
-                        <td>{{ student.date_of_birth }}</td>
+                        <td>{% if student.date_of_birth != None %}{{ student.get_date }}{% endif%}</td>
                         <td>{{ student.gender }}</td>
-                        <td>{{ student.city }} - {{ student.address }}</td>
-                        <td>{{ student.invite_person }}</td>
+                        <td>{% if student.city != None %}{{ student.city }}{% endif%} {{ student.address }}</td>
+                        <td>{% if student.invite_person != None %}{{ student.invite_person }}{% endif%}</td>
                       </tr>
                     {% endfor %}
                 </table>
-          </div>
+            </div>
     {% endfor %}
-    
+    </div>
 <!--
     <table class="table-style-three">
         <thead><tr>

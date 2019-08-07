@@ -4,6 +4,7 @@
 <head>
 <title>{% block title %}{% endblock %}</title>
 <link rel="stylesheet" type="text/css" href="{% block stylesheet %}{% static "admin/css/base.css" %}{% endblock %}" />
+<link rel="stylesheet" href="{% static 'css/styles.css' %}"/>
 {% block extrastyle %}{% endblock %}
 {% if LANGUAGE_BIDI %}<link rel="stylesheet" type="text/css" href="{% block stylesheet_rtl %}{% static "admin/css/rtl.css" %}{% endblock %}" />{% endif %}
 {% block extrahead %}{% endblock %}
@@ -26,15 +27,12 @@
     <!-- Header -->
     <div id="header">
         <div id="branding">
-        {% block branding %}{% endblock %}
+        <h1>學員管理幫手
         </div>
-        {% block usertools %}
-        {% if has_permission %}
+        {% block welcome_log %}
         <div id="user-tools">
-            {% block welcome-msg %}
-                {% trans 'Welcome,' %}
+                {% trans '歡迎,' %}
                 <strong>{% firstof user.get_short_name user.get_username %}</strong>.
-            {% endblock %}
             {% block userlinks %}
                 {% if site_url %}
                     <a href="{{ site_url }}">{% trans 'View site' %}</a> /
@@ -46,12 +44,11 @@
                     {% endif %}
                 {% endif %}
                 {% if user.has_usable_password %}
-                <a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a> /
+                <a href="{% url 'admin:password_change' %}">{% trans '改密碼' %}</a> /
                 {% endif %}
-                <a href="{% url 'admin:logout' %}">{% trans 'Log out' %}</a>
+                <a href="{% url 'admin:logout' %}">{% trans '登出' %}</a>
             {% endblock %}
         </div>
-        {% endif %}
         {% endblock %}
         {% block nav-global %}{% endblock %}
     </div>
@@ -63,7 +60,15 @@
     </div>
     {% endblock %}
     {% endif %}
-
+    {% block menu_bar %}
+    <div id='cssmenu'>
+        <ul>
+           <li {% block menu_active_form_student %}{% endblock %}><a href="{% url 'form_student' %}">學員</a></li>
+           <li {% block menu_active_form_class %}{% endblock %}><a href="{% url 'form_class' %}">班級</a></li>
+           <li {% block menu_active_form_present_check %}{% endblock %}><a href="{% url 'form_present_check' %}">點名</a></li>
+        </ul>
+    </div>
+    {% endblock %}
     {% block messages %}
         {% if messages %}
         <ul class="messagelist">{% for message in messages %}
@@ -74,15 +79,6 @@
     
     <!-- Content -->
     <div id="content" class="{% block coltype %}colM{% endblock %}">
-        <div id="content-related">
-            <div class="module" id="report-form-module">
-                <h2>{% trans '表格' %}</h2>
-                <h3>{% trans '學務表格' %}</h3>
-                <a href="{% url 'form_student' %}">學員</a>
-                <a href="{% url 'form_class' %}">班級</a>
-                <a href="{% url 'form_present_check' %}">點名</a>
-            </div>
-        </div>
         {% block pretitle %}{% endblock %}
         {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
         {% block content %}

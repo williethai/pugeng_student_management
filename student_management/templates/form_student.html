@@ -1,4 +1,6 @@
 {% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_list %}
+
 {% load i18n static %}
 {% load static %}
 
@@ -8,44 +10,382 @@
 {% block coltype %}colMS{% endblock %}
 
 {% block bodyclass %}{{ block.super }} dashboard{% endblock %}
-
+{% block breadcrumbs %}{% endblock %}
+{% block menu_active_form_student %}class='active'{% endblock %}
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/table.css' %}"/>
-
+<script src="{% static 'js/get_cookie.js' %}"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#aabcfe;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#aabcfe;color:#669;background-color:#e8edff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#aabcfe;color:#039;background-color:#b9c9fe;}
+.tg .tg-hmp3{background-color:#D2E4FC;text-align:left;vertical-align:top}
+.tg .tg-baqh{text-align:center;vertical-align:top}
+.tg .tg-mb3i{background-color:#D2E4FC;text-align:right;vertical-align:top}
+.tg .tg-lqy6{text-align:right;vertical-align:top}
+.tg .tg-0lax{text-align:left;vertical-align:top}
+</style>
 <h1>學生總攬表</h1>
-    
-    <form action="" method="get">
-        {{ students.form.as_p }}
+    <div style="padding: 20px 0;">
+        <a class="btn btn-primary" id="addBtn">添加學員</a>
+        <a class="btn btn-danger">删除學員</a>
+    </div>
+    <form action="" method="get" style="width:1019px"><fieldset><legend><strong>篩選</strong></legend>
+            {{ students.form.as_table }}
+        
         <input type="submit" />
-    </form>
-    <table class="table-style-three">
+    </fieldset></form>
+    <br>
+    <table class="tg" style="undefined;table-layout: fixed; width: 1150px">
+        <colgroup>
+        <col style="width: 51px">
+        <col style="width: 51px">
+        <col style="width: 71px">
+        <col style="width: 51px">
+        <col style="width: 121px">
+        <col style="width: 91px">
+        <col style="width: 41px">
+        <col style="width: 101px">
+        <col style="width: 351px">
+        <col style="width: 71px">
+        <col style="width: 151px">
+        </colgroup>
         <thead>
-        <tr>
-          <th>姓名</th>
-          <th>法名</th>
-          <th>電話</th>
-          <th>生日</th>
-          <th>性別</th>
-          <th>身分字號</th>
-          <th>地址</th>
-          <th>介紹人</th>
-          <th>緊急連絡</th>
+        <tr class="tg-baqh">
+          <th class="tg-hmp3">操作</th>
+          <th class="tg-hmp3">學院編號</th>
+          <th class="tg-hmp3">姓名</th>
+          <th class="tg-hmp3">法名</th>
+          <th class="tg-hmp3">電話</th>
+          <th class="tg-hmp3">生日</th>
+          <th class="tg-hmp3">性別</th>
+          <th class="tg-hmp3">身分字號</th>
+          <th class="tg-hmp3">地址</th>
+          <th class="tg-hmp3">介紹人</th>
+          <th class="tg-hmp3">緊急連絡</th>
         </tr>
         </thead>
+        <tbody id="tb">
         {% for student in students.qs %}
-        <tr align="left">
-            <td>{{ student.name }}</td>
-            <td>{{ student.clerical_name }}</td>
-            <td>{{ student.phone_num }}</td>
-            <td>{{ student.date_of_birth }}</td>
-            <td>{{ student.gender }}</td>
-            <td>{{ student.national_id_num }}</td>
-            <td>{{ student.city }} - {{ student.address }}</td>
-            <td>{{ student.invite_person }}</td>
-            <td>{{ student.emergency_contact_person }} - {{ student.emergency_contact_phone }}</td>
+        <tr nid="{{  student.id }}" gender="{{ student.gender.id }}" city="{{ student.city.id }}" invite_person="{{ student.invite_person.id }}" address="{{student.address}}" emergency_contact_person="{{emergency_contact_person}}" emergency_contact_phone="{{emergency_contact_phone}}">
+            <td><a class="del-row">刪除</a></td>
+            <td name="nid"><a>{{ student.id }}</a></td>
+            <td name="name"><a class="edit-row">{{ student.name }}</a></td>
+            <td name="clerical_name">{{ student.clerical_name }}</td>
+            <td name="phone_num">{{ student.phone_num }}</td>
+            <td name="date_of_birth">{% if student.date_of_birth != None %}{{ student.get_date }}{% endif%}</td>
+            <td name="gender">{{ student.gender }}</td>
+            <td name="national_id_num">{{ student.national_id_num }}</td>
+            <td>{% if student.city != None %}{{ student.city }}{% endif%} {{ student.address }}</td>
+            <td>{% if student.invite_person != None %}{{ student.invite_person }}{% endif%}</td>
+            <td>{{ student.emergency_contact_person }} {{ student.emergency_contact_phone }}</td>
           </tr>
         {% endfor %}
+        </tbody>
     </table>
+    
+    <!-- Modal -->
+    <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" student_id="" row_to_edit="">
+        {% csrf_token %}
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="addModalTitle">創建學員</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="fm" class="form-horizontal">
+                        <div class="form-group">
+                            <label for="name" class="col-sm-2 control-label">姓名</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" name="name" placeholder="姓名">
+                            </div>
+                        
+                            <label for="clerical_name" class="col-sm-2 control-label">法名</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" name="clerical_name" placeholder="法名">
+                            </div>
+                        
+                            <label for="date_of_birth" class="col-sm-2 control-label">生日</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" name="date_of_birth" placeholder="生日">
+                            </div>
+                        
+                            <label for="gender" class="col-sm-2 control-label">性别</label>
+                            <div class="col-sm-4">
+                                <select class="form-control" name="gender">
+                                    {% for gender_i in gender %}
+                                        <option value="{{gender_i.id}}">{{ gender_i }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        
+                            <label for="national_id_num" class="col-sm-2 control-label">身分字號</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" name="national_id_num" placeholder="身分字號">
+                            </div>
+                        
+                            <label for="phone_num" class="col-sm-2 control-label">電話號碼</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" name="phone_num" placeholder="電話號碼">
+                            </div>
+                        
+                            <label for="city" class="col-sm-2 control-label">市</label>
+                            <div class="col-sm-2">
+                                <select class="form-control" name="city">
+                                    <option value="0">----</option>
+                                    {% for city_i in city %}
+                                        <option value="{{ city_i.id }}">{{ city_i }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        
+                            <label for="address" class="col-sm-2 control-label">地址</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" name="address" placeholder="地址">
+                            </div>
+                        
+                            <label for="invite_person" class="col-sm-2 control-label">介紹人</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" name="invite_person" data-display="fgdfhf">
+                                    <option value="0" data-display="">----</option>
+                                    {% for student_i in student_all %}
+                                        <option value="{{ student_i.id }}" data-display="{{ student_i }}">{{ student_i }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        
+                            <label for="emergency_contact_person" class="col-sm-2 control-label">緊急聯絡</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" name="emergency_contact_person" placeholder="緊急聯絡人">
+                            </div>
+                        
+                            <label for="emergency_contact_phone" class="col-sm-2 control-label">緊急電話</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" name="emergency_contact_phone" placeholder="緊急聯絡電話">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <span id="errorMsg" style="color: red;"></span>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="btnSave">儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="alert alert-danger" role="alert">
+                <h3>刪除此學員</h3>
+                <div>...<input style="display: none;" type="text" id="delNid" /></div>
+                <div>
+                    <button id="calConfirm" type="button" class="btn btn-default">取消</button>
+                    <button id="delConfirm" type="button" class="btn btn-danger">確定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(function () {
+            bindEvent();
+
+            bindSave();
+            bindDel();
+            bindDelConfirm();
+            bindEdit();
+            //bindEditConfirm();
+
+            //bindTestAjaxList();
+        });
+        function bindEvent() {
+            $('#addBtn').click(function () {
+                $('#addModalTitle').text('創建學員')
+                $('#addModal').attr('row_to_edit', "")
+                $('#addModal').modal('show');
+            })
+        }
+        function bindSave() {
+            $('#btnSave').click(function () {
+                var postData = {};
+                var token = getCookie('csrftoken');
+                
+                $('#addModal').find('input,select').each(function () {
+                    var v = $(this).val();
+                    var n = $(this).attr('name');
+                    postData[n] = v;
+                });
+                if(postData.name==''){
+                    $('#errorMsg').text('請填寫姓名');
+                    return
+                }
+                else if(postData.date_of_birth==''){
+                    $('#errorMsg').text('請填寫身分證上生日');
+                    return
+                }
+                else if(postData.national_id_num==''){
+                    $('#errorMsg').text('請填寫身分證');
+                    return
+                }
+                else if(postData.phone_num==''){
+                    $('#errorMsg').text('請填寫行動電話或住宅電話');
+                    return
+                }
+                postData['nid'] = $('#addModal').attr('student_id')
+                var row_to_edit = $('#addModal').attr('row_to_edit')
+                $.ajax({
+                    url: '/student/add_student',
+                    type: 'POST',
+                    headers:{'X-CSRFToken': token},
+                    data: postData,
+                    success:function (arg) {
+                        // arg是字符串
+                        // JSON.parse将字符串转换成字典， json.loads
+                        var dict = JSON.parse(arg);
+                        if(dict.status){
+                            createRow(row_to_edit, postData, dict.nid, dict.gender, dict.city, dict.invite_person);
+                            $('#addModal').modal('hide');
+                            // window.location.reload();
+                        }else {
+                            $('#errorMsg').text(dict.message);
+                        }
+                    }
+                })
+
+            });
+    }
+    function bindEdit() {
+        $('#tb').on('click','.edit-row',function () {
+            $('#addModalTitle').text('修正學員資料 - 編號: ' + $(this).parent().parent().attr('nid'))
+            $('#addModal').attr('student_id', $(this).parent().parent().attr('nid'))
+            $('#addModal').attr('row_to_edit', $(this).parent().parent()["0"].rowIndex)
+            //1.获取当前行的所有数据
+            // 将数据赋值到对应的对话框的指定位置
+            $(this).parent().parent().find('td').each(function () {
+                 // cls_id
+                var v = $(this).text();
+                var n = $(this).attr('name');
+
+                $("#addModal input[name='"+ n +"']").val(v)
+             });
+            $('#addModal select[name="gender"]').val($(this).parent().parent().attr('gender'));
+            if($(this).parent().parent().attr('city') != "")$('#addModal select[name="city"]').val($(this).parent().parent().attr('city'));
+            if($(this).parent().parent().attr('invite_person') != "")$('#addModal select[name="invite_person"]').val($(this).parent().parent().attr('invite_person'));
+            $('#addModal input[name="address"]').val($(this).parent().parent().attr('address'));
+            $('#addModal input[name="emergency_contact_person"]').val($(this).parent().parent().attr('emergency_contact_person'));
+            $('#addModal input[name="emergency_contact_phone"]').val($(this).parent().parent().attr('emergency_contact_phone'));
+            $('#addModal').modal('show');
+        })
+    }
+    function bindDel() {
+        $('#tb').on('click','.del-row',function () {
+            $('#delModal').modal('show');
+            // 回去当前行的ID
+            var rowId = $(this).parent().parent().attr('nid');
+            $('#delNid').val(rowId);
+        })
+    };
+    function bindDelConfirm() {
+        $('#delConfirm').click(function () {
+            var rowId = $('#delNid').val();
+            
+            $.ajax({
+                url: '/student/del_student',
+                type: 'GET',
+                data: {'nid': rowId},
+                success:function (arg) {
+                    var dict = JSON.parse(arg);
+                    if(dict.status){
+                        $('tr[nid="'+ rowId+'"]').remove();
+                    }
+                    $('#delModal').modal('hide');
+                }
+            })
+            
+        });
+        $('#calConfirm').click(function() {
+            $('#delModal').modal('hide');
+        });
+    }
+    function createRow(row_to_edit, postData, nid, gender, city, invite_person) {
+        //var tr = document.createElement('tr');
+        //var tr = $('#tb').insertRow(0);
+        var student_tb =  document.getElementById('tb');
+        if(row_to_edit != 0 && row_to_edit != '0' && row_to_edit != '')
+            student_tb.deleteRow(row_to_edit - 1);
+        var tr = student_tb.insertRow(row_to_edit - 1);
+        $(tr).attr('nid',nid);
+        $(tr).attr('gender',postData.gender);
+        $(tr).attr('city',postData.city);
+        $(tr).attr('invite_person',postData.invite_person);
+        $(tr).attr('address',postData.address);
+        $(tr).attr('emergency_contact_person',postData.emergency_contact_person);
+        $(tr).attr('emergency_contact_phone',postData.emergency_contact_phone);
+
+        var tdOperation = document.createElement('td');
+        tdOperation.innerHTML = '<td><a class="del-row">刪除</a>';
+        $(tr).append(tdOperation);
+
+        var tdNid = document.createElement('td');
+        tdNid.innerHTML = nid;
+        $(tdNid).attr('name',nid);
+        $(tr).append(tdNid);
+        
+        var tdName = document.createElement('td');
+        tdName.innerHTML = '<a class="edit-row">' + postData.name + '</a></td>';
+        $(tdName).attr('name',postData.name);
+        $(tr).append(tdName);
+
+        var tdClericalName = document.createElement('td');
+        tdClericalName.innerHTML = postData.clerical_name;
+        $(tdClericalName).attr('name',postData.clerical_name);
+        $(tr).append(tdClericalName);
+
+        var tdPhoneNum = document.createElement('td');
+        tdPhoneNum.innerHTML = postData.phone_num;
+        $(tdPhoneNum).attr('name',postData.phone_num);
+        $(tr).append(tdPhoneNum);
+        
+        var tdDateOfBirth = document.createElement('td');
+        tdDateOfBirth.innerHTML = postData.date_of_birth;
+        $(tdDateOfBirth).attr('name',postData.date_of_birth);
+        $(tr).append(tdDateOfBirth);
+        
+        var tdGender = document.createElement('td');
+        tdGender.innerHTML = gender;
+
+        $(tr).append(tdGender);
+
+        var tdNationalIdNum = document.createElement('td');
+        tdNationalIdNum.innerHTML = postData.national_id_num;
+        $(tdNationalIdNum).attr('name',postData.national_id_num);
+        $(tr).append(tdNationalIdNum);
+        
+        var tdAddress = document.createElement('td');
+        tdAddress.innerHTML = city + " " + postData.address;
+        $(tr).append(tdAddress);
+        
+        var tdInvitePerson = document.createElement('td');
+        tdInvitePerson.innerHTML = invite_person;
+        $(tr).append(tdInvitePerson);
+        
+        var tdEmergencyContactPerson = document.createElement('td');
+        tdEmergencyContactPerson.innerHTML = postData.emergency_contact_person + " " + postData.emergency_contact_phone;
+        $(tr).append(tdEmergencyContactPerson);
+        
+        //var tdHandle = '<td> <a class="glyphicon glyphicon-remove icon del-row"></a><a class="fa fa-pencil-square-o icon edit-row"></a> </td>';
+        //$(tr).append(tdHandle);
+
+        //$('#tb').append(tr);
+    }
+    </script>
 {% endblock %}
 
 
