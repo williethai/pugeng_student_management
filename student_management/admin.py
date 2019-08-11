@@ -18,7 +18,7 @@ class Class_Schedule_Inline(admin.TabularInline):
     
 class StudentAdmin(admin.ModelAdmin):
     list_display = (['name', 'clerical_name', 'date_of_birth', 'gender', 'national_id_num', 'phone_num', 'city', 'address', 'invite_person', 'emergency_contact_person', 'emergency_contact_phone', 'list_classes'])
-    inlines = (Student_Class_Inline,)
+    #inlines = (Student_Class_Inline,)
     fields = (
         ('name', 'clerical_name'),
         ('date_of_birth', 'gender'),
@@ -57,7 +57,7 @@ class StudentClassScheduleAdmin(admin.ModelAdmin):
     list_display = (['class_of_student', 'student', 'present_check'])
 
     
-admin.site.register(Student, StudentAdmin)
+#admin.site.register(Student, StudentAdmin)
 admin.site.register(Class, ClassAdmin)
 admin.site.register(Class_Group, ClassGroupAdmin)
 admin.site.register(Student_Class_Schedule)

@@ -14,6 +14,7 @@
 {% block menu_active_form_student %}class='active'{% endblock %}
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/table.css' %}"/>
+<script src="{% static 'js/utils.js' %}"></script>
 <script src="{% static 'js/get_cookie.js' %}"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -29,7 +30,7 @@
 .tg .tg-lqy6{text-align:right;vertical-align:top}
 .tg .tg-0lax{text-align:left;vertical-align:top}
 </style>
-<h1>學生總攬表</h1>
+<h1>學生總覽表</h1>
     <div style="padding: 20px 0;">
         <a class="btn btn-primary" id="addBtn">添加學員</a>
         <a class="btn btn-danger">删除學員</a>
@@ -71,7 +72,7 @@
         </thead>
         <tbody id="tb">
         {% for student in students.qs %}
-        <tr nid="{{  student.id }}" gender="{{ student.gender.id }}" city="{{ student.city.id }}" invite_person="{{ student.invite_person.id }}" address="{{student.address}}" emergency_contact_person="{{emergency_contact_person}}" emergency_contact_phone="{{emergency_contact_phone}}">
+        <tr nid="{{  student.id }}" student_name="{{student.name}}" gender="{{ student.gender.id }}" city="{{ student.city.id }}" invite_person="{{ student.invite_person.id }}" invite_person_name="{{ student.invite_person }}" address="{{student.address}}" emergency_contact_person="{{emergency_contact_person}}" emergency_contact_phone="{{emergency_contact_phone}}">
             <td><a class="del-row">刪除</a></td>
             <td name="nid"><a>{{ student.id }}</a></td>
             <td name="name"><a class="edit-row">{{ student.name }}</a></td>
@@ -81,7 +82,7 @@
             <td name="gender">{{ student.gender }}</td>
             <td name="national_id_num">{{ student.national_id_num }}</td>
             <td>{% if student.city != None %}{{ student.city }}{% endif%} {{ student.address }}</td>
-            <td>{% if student.invite_person != None %}{{ student.invite_person }}{% endif%}</td>
+            <td name="invite_person">{% if student.invite_person != None %}{{ student.invite_person }}{% endif%}</td>
             <td>{{ student.emergency_contact_person }} {{ student.emergency_contact_phone }}</td>
           </tr>
         {% endfor %}
@@ -152,12 +153,15 @@
                         
                             <label for="invite_person" class="col-sm-2 control-label">介紹人</label>
                             <div class="col-sm-10">
-                                <select class="form-control" name="invite_person" data-display="fgdfhf">
-                                    <option value="0" data-display="">----</option>
-                                    {% for student_i in student_all %}
-                                        <option value="{{ student_i.id }}" data-display="{{ student_i }}">{{ student_i }}</option>
-                                    {% endfor %}
-                                </select>
+                                <form>
+                                    <input id="invite_person_input" name="invite_person_input" class="form-control" list="invite_person_datalist">
+                                    <datalist  name="invite_person" id="invite_person_datalist">
+                                        <option value="----" data-value="0"></option>
+                                        {% for student_i in student_all %}
+                                            <option value="{{ student_i.name }}" id="{{ student_i.id }}"></option>
+                                        {% endfor %}
+                                    </datalist>
+                                </form>
                             </div>
                         
                             <label for="emergency_contact_person" class="col-sm-2 control-label">緊急聯絡</label>
@@ -184,7 +188,7 @@
     <div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
         <div class="modal-dialog" role="document">
             <div class="alert alert-danger" role="alert">
-                <h3>刪除此學員</h3>
+                <h3 id="delModalWarning">刪除此學員</h3>
                 <div>...<input style="display: none;" type="text" id="delNid" /></div>
                 <div>
                     <button id="calConfirm" type="button" class="btn btn-default">取消</button>
@@ -209,6 +213,10 @@
             $('#addBtn').click(function () {
                 $('#addModalTitle').text('創建學員')
                 $('#addModal').attr('row_to_edit', "")
+                $('#errorMsg').text('');
+                $('#addModal').find('input,select,datalist').each(function () {
+                    $(this).val('');
+                });
                 $('#addModal').modal('show');
             })
         }
@@ -216,8 +224,10 @@
             $('#btnSave').click(function () {
                 var postData = {};
                 var token = getCookie('csrftoken');
+                console.log('kgjh')
+                onDlistInput($('#addModal input[name="invite_person_input"]')[0]);
                 
-                $('#addModal').find('input,select').each(function () {
+                $('#addModal').find('input,select,datalist').each(function () {
                     var v = $(this).val();
                     var n = $(this).attr('name');
                     postData[n] = v;
@@ -226,16 +236,20 @@
                     $('#errorMsg').text('請填寫姓名');
                     return
                 }
-                else if(postData.date_of_birth==''){
+                if(postData.date_of_birth==''){
                     $('#errorMsg').text('請填寫身分證上生日');
                     return
                 }
-                else if(postData.national_id_num==''){
+                if(postData.national_id_num==''){
                     $('#errorMsg').text('請填寫身分證');
                     return
                 }
-                else if(postData.phone_num==''){
+                if(postData.phone_num==''){
                     $('#errorMsg').text('請填寫行動電話或住宅電話');
+                    return
+                }
+                if(postData.invite_person=='-1'){
+                    $('#errorMsg').text('請填寫有效介紹學院');
                     return
                 }
                 postData['nid'] = $('#addModal').attr('student_id')
@@ -250,9 +264,9 @@
                         // JSON.parse将字符串转换成字典， json.loads
                         var dict = JSON.parse(arg);
                         if(dict.status){
-                            createRow(row_to_edit, postData, dict.nid, dict.gender, dict.city, dict.invite_person);
+                            //createRow(row_to_edit, postData, dict.nid, dict.gender, dict.city, dict.invite_person);
                             $('#addModal').modal('hide');
-                            // window.location.reload();
+                            window.location.reload();
                         }else {
                             $('#errorMsg').text(dict.message);
                         }
@@ -277,16 +291,19 @@
              });
             $('#addModal select[name="gender"]').val($(this).parent().parent().attr('gender'));
             if($(this).parent().parent().attr('city') != "")$('#addModal select[name="city"]').val($(this).parent().parent().attr('city'));
-            if($(this).parent().parent().attr('invite_person') != "")$('#addModal select[name="invite_person"]').val($(this).parent().parent().attr('invite_person'));
+            if($(this).parent().parent().attr('invite_person') != "")$('#addModal input[name="invite_person_input"]').val($(this).parent().parent().attr('invite_person_name'));
             $('#addModal input[name="address"]').val($(this).parent().parent().attr('address'));
             $('#addModal input[name="emergency_contact_person"]').val($(this).parent().parent().attr('emergency_contact_person'));
             $('#addModal input[name="emergency_contact_phone"]').val($(this).parent().parent().attr('emergency_contact_phone'));
+            $('#errorMsg').text('');
             $('#addModal').modal('show');
         })
     }
     function bindDel() {
         $('#tb').on('click','.del-row',function () {
+            //$('#delModal').
             $('#delModal').modal('show');
+            $('#delModalWarning').text('刪除此學員 - ' + $(this).parent().parent().attr('student_name'));
             // 回去当前行的ID
             var rowId = $(this).parent().parent().attr('nid');
             $('#delNid').val(rowId);
@@ -315,8 +332,7 @@
         });
     }
     function createRow(row_to_edit, postData, nid, gender, city, invite_person) {
-        //var tr = document.createElement('tr');
-        //var tr = $('#tb').insertRow(0);
+
         var student_tb =  document.getElementById('tb');
         if(row_to_edit != 0 && row_to_edit != '0' && row_to_edit != '')
             student_tb.deleteRow(row_to_edit - 1);
@@ -325,6 +341,7 @@
         $(tr).attr('gender',postData.gender);
         $(tr).attr('city',postData.city);
         $(tr).attr('invite_person',postData.invite_person);
+        $(tr).attr('invite_person_name',postData.invite_person_name);
         $(tr).attr('address',postData.address);
         $(tr).attr('emergency_contact_person',postData.emergency_contact_person);
         $(tr).attr('emergency_contact_phone',postData.emergency_contact_phone);
@@ -379,11 +396,7 @@
         var tdEmergencyContactPerson = document.createElement('td');
         tdEmergencyContactPerson.innerHTML = postData.emergency_contact_person + " " + postData.emergency_contact_phone;
         $(tr).append(tdEmergencyContactPerson);
-        
-        //var tdHandle = '<td> <a class="glyphicon glyphicon-remove icon del-row"></a><a class="fa fa-pencil-square-o icon edit-row"></a> </td>';
-        //$(tr).append(tdHandle);
 
-        //$('#tb').append(tr);
     }
     </script>
 {% endblock %}

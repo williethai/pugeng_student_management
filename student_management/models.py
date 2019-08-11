@@ -27,7 +27,6 @@ class Student(models.Model):
     job_title = models.CharField(max_length=60, default='', blank=True, verbose_name='職稱')
     email_address = models.CharField(max_length=60, default='', blank=True, verbose_name='Email 網址')
     invite_person = models.ForeignKey('self', on_delete=models.CASCADE, null=True, related_name='invite_person_set', blank=True, verbose_name='介紹人')
-    invite_person = models.ForeignKey('self', on_delete=models.CASCADE, null=True, related_name='invite_person_set', blank=True, verbose_name='介紹人')
     spectial_skill = models.CharField(max_length=20, default='', verbose_name='特殊專長')
     mental_status = models.CharField(max_length=10, default='', verbose_name='精神狀態')
     mental_status_note = models.CharField(max_length=100, default='', verbose_name='精神狀態說明')
@@ -72,35 +71,51 @@ class StudentFilter(django_filters.FilterSet):
         
 class Class(models.Model):
     name = models.CharField(max_length=60, default='', verbose_name='名稱')
-    status = models.ForeignKey(Class_Status, on_delete=models.CASCADE, default='', related_name='class_status_set', verbose_name='狀態')
-    teacher = models.CharField(max_length=60, default='', verbose_name='負責師父')
-    supervisor = models.CharField(max_length=60, default='', verbose_name='監督')
+    status = models.CharField(max_length=60, default='', verbose_name='狀態', null=True, blank=True)
+    teacher = models.CharField(max_length=60, default='', verbose_name='負責師父', null=True, blank=True)
+    supervisor = models.CharField(max_length=60, default='', verbose_name='監督', null=True, blank=True)
     monitor = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='class_monitor_set', verbose_name='總學員長', null=True, blank=True)
     assistant_monitor1 = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='assistant_monitor1_set', verbose_name='副總學員長1', null=True, blank=True)
     assistant_monitor2 = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='assistant_monitor2_set', verbose_name='副總學員長2', null=True, blank=True)
     assistant_monitor3 = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='assistant_monitor3_set', verbose_name='副總學員長3', null=True, blank=True)
-    students = models.ManyToManyField(Student, through='Student_Class', blank=True, related_name='class_of_student', verbose_name='班中學員')
-    number_of_classes = models.IntegerField(default=0, verbose_name='班總數', null=True, blank=True)
-    year = models.ForeignKey(StudyYear, on_delete=models.CASCADE, null=True, blank=True, related_name='study_year_set', verbose_name='年')
-    semester = models.ForeignKey(StudySemester, on_delete=models.CASCADE, null=True, blank=True, related_name='study_semester_set', verbose_name='期')
-    start_date = models.DateField(null=True, blank=True, verbose_name='開始日期')
-    end_date = models.DateField(null=True, blank=True, verbose_name='結束日期')
-    study_time = models.ForeignKey(StudyTime, on_delete=models.CASCADE, null=True, blank=True, related_name='study_time_set', verbose_name='上課時間')
+    students = models.ManyToManyField(Student, through='Student_Class', through_fields=('class_of_student', 'student'), null=True, blank=True, related_name='class_of_student', verbose_name='班中學員')
+    number_of_classes = models.IntegerField(default=0, verbose_name='總堂數', null=True, blank=True)
+    number_of_classes_to_graduate = models.IntegerField(default=0, verbose_name='可結業總堂數', null=True, blank=True)
+    number_of_classes_to_makeup = models.IntegerField(default=0, verbose_name='補課最多', null=True, blank=True)
+    year = models.IntegerField(default=0, null=True, blank=True, verbose_name='年期')
+    semester = models.CharField(max_length=60, default='', verbose_name='學期', null=True, blank=True)
+    start_date = models.DateField(null=True, blank=True, default='', verbose_name='開始日期')
+    end_date = models.DateField(null=True, blank=True, default='', verbose_name='結束日期')
+    graduation_date = models.DateField(null=True, blank=True, default='', verbose_name='領證日期')
+    study_time = models.CharField(max_length=60, default='', verbose_name='上課時間', null=True, blank=True)
     #create_at = models.DateTimeField()
-    introduction = models.CharField(max_length=2000, default='', blank=True, null=True)
+    introduction = models.CharField(max_length=2000, default='', blank=True, null=True, verbose_name='簡介')
 
 
     def list_students(self):
         return "\n".join(str(c for c in self.students.all()) )
     @property
     def to_str(self):
-        return str(str(self.year) + " - " +str(self.semester) + ' - ' + self.name)
+        #return str(str(self.year) + " - " +str(self.semester) + ' - ' + self.name)
+        return self.name
     @property
     def get_start_date(self):
-        return str(self.start_date.strftime('%Y/%m/%d'))
+        if self.start_date:
+            return str(self.start_date.strftime('%Y-%m-%d'))
+        else:
+            return ""
     @property
     def get_end_date(self):
-        return str(self.end_date.strftime('%Y/%m/%d'))
+        if self.end_date:
+            return str(self.end_date.strftime('%Y-%m-%d'))
+        else:
+            return ""
+    @property
+    def get_graduation_date(self):
+        if self.graduation_date:
+            return str(self.graduation_date.strftime('%Y-%m-%d'))
+        else:
+            return ""
     def __str__(self):
         return str(str(self.year) + " - " +str(self.semester) + ' - ' + self.name)
         #return self.name
@@ -157,18 +172,26 @@ class Class_Group(models.Model):
 #Many-to-Many stduent & class group relationship
 class Student_Class(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='in_class_student_set', verbose_name='學員名稱')
-    class_of_student = models.ForeignKey(Class, on_delete=models.CASCADE, default='', related_name='student_with_class_set', blank=True)
+    class_of_student = models.ForeignKey(Class, on_delete=models.CASCADE, default='', related_name='student_with_class_set')
     date_joined = models.DateField(null=True, blank=True, verbose_name='參加日期')
     group_of_student = models.ForeignKey(Class_Group, on_delete=models.CASCADE, default='', related_name='group_of_student_in_class', blank=True, null=True, verbose_name='組別')
-    status = models.ForeignKey(Student_Class_Status, on_delete=models.CASCADE, default='', related_name='student_class_status_set', verbose_name='上課狀態')
+    status = models.CharField(max_length=60, default='', verbose_name='上課狀態', blank=True, null=True)
+    invite_person = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, related_name='invite_person_to_class_set', blank=True, verbose_name='介紹人')
     present_check = models.IntegerField(default=0, blank=True, verbose_name='出席')
     student_qr_code = models.CharField(max_length=10, default='', blank=True, null=True, verbose_name='QR碼')
     #create_at = models.DateTimeField(blank=True)
     class Meta:
         verbose_name_plural = "班中學員"
+        unique_together = ('student', 'class_of_student')
+    @property
+    def get_joined_date(self):
+        if self.date_joined:
+            return str(self.date_joined.strftime('%Y-%m-%d'))
+        else:
+            return ""
     def save(self, *args, **kwargs):
         print("Student_Class - save")
-        self.student_qr_code = str(self.student.student_id) + "@" + str(self.class_of_student.class_id) + "@" + str(self.group_of_student)
+        self.student_qr_code = str(self.student.id) + "@" + str(self.class_of_student.id) + "@" + str(self.group_of_student)
         
         if self.pk == None: #Only allow save , not update
             print("Student_Class - adding")
@@ -185,6 +208,8 @@ class Student_Class_Schedule(models.Model):
     student_class = models.ForeignKey(Student_Class, on_delete=models.CASCADE, default='', related_name='student_class_scheduled_session_set')
     scheduled_class = models.ForeignKey(Class_Schedule, on_delete=models.CASCADE, default='', related_name='scheduled_class')
     present_check = models.BooleanField(default=False, verbose_name='出席')
+    make_up_class = models.BooleanField(default=False, verbose_name='補課狀態')
+
     #study_time = models.DateField(default='0000-00-00', verbose_name='上課時間')
     note = models.CharField(max_length=100, default='', null=True, blank=True, verbose_name='備註')
     class Meta:
