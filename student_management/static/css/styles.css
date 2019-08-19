@@ -95,3 +95,9 @@
 #cssmenu > ul > li > a:hover:after {
   background: #47c9af;
 }
+#div_1, #div_2, #div_3{
+    display: table;
+    border:1px solid red;
+    margin-right:10px;
+    float:left;
+}

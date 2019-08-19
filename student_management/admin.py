@@ -71,6 +71,7 @@ admin.site.register(City, City_Admin)
 admin.site.register(StudyTime, StudyTime_Admin)
 admin.site.register(StudyYear, StudyYear_Admin)
 admin.site.register(StudySemester, StudySemester_Admin)
+admin.site.register(MakeUpClassBookingRecord)
 
 admin.site.register(Student_Class)
 

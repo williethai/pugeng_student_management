@@ -1,23 +1,16 @@
-btn_click = function() {
-    $.ajax({
-             url : "http://10.99.158.202:8000/api/student_class_schedule/update_student_attendance/51/",
-             headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type"},
-             type: 'PUT',
-             data: "{present_check: false}",
-                 });
-             };
-             
 function send(object)
 {
     var urlvariable;
     var csrftoken = getCookie('csrftoken');
     urlvariable = object.value + "/";
-    //urlvariable = "54" + "/";
     var ItemJSON;
     if (object.checked == true)
         ItemJSON = "{\"present_check\": true}";
     else 
         ItemJSON = "{\"present_check\": false}";
+    console.log('---------------')
+    
+    console.log(object)
     URL = "http://10.99.158.202:8000/api/student_class_schedule/update_student_attendance/" + urlvariable;  //Your URL
 
     var xmlhttp = new XMLHttpRequest();

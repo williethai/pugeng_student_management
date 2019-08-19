@@ -1,0 +1,680 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+{% load static %}
+
+
+{% block title %}班級表格{% endblock %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />{% endblock %}
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block menu_active_form_class %}class='active'{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/table.css' %}"/>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="{% static 'js/utils.js' %}"></script>
+<script src="{% static 'js/get_cookie.js' %}"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#aabcfe;}
+.tg  tbody{overflow:scroll;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#aabcfe;color:#669;background-color:#e8edff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#aabcfe;color:#039;background-color:#b9c9fe;}
+.tg .tg-hmp3{background-color:#D2E4FC;text-align:left;vertical-align:top}
+.tg .tg-baqh{text-align:center;vertical-align:top}
+.tg .tg-mb3i{background-color:#D2E4FC;text-align:right;vertical-align:top}
+.tg .tg-lqy6{text-align:right;vertical-align:top}
+.tg .tg-0lax{text-align:left;vertical-align:top}
+</style>
+<h1>班級資訊: <strong>{{ class_i.to_str }} - {{ class_i.year|default_if_none:""}} - {{ class_i.semester|default_if_none:"" }}</strong></h1>
+    <br>
+    <div id="div_tb">
+        <br>
+        <table class="tg" style="undefined;table-layout: fixed; width: 972px" nid="{{class_i.id}}" class_name="{{class_i.to_str}}">
+            <colgroup>
+                <col style="width: 81px">
+                <col style="width: 81px">
+                <col style="width: 81px">
+                <col style="width: 81px">
+                <col style="width: 81px">
+                <col style="width: 81px">
+                <col style="width: 81px">
+                <col style="width: 81px">
+                <col style="width: 81px">
+                <col style="width: 81px">
+                <col style="width: 81px">
+                <col style="width: 81px">
+            </colgroup>
+            <tbody >
+            <tr>
+                <td colspan="6"><strong>操作: </strong>
+                    <!--<button type="button" class="del-row"> 刪除 </button>-->
+                    <button type="button" onclick="window.location.href ='{% url 'name_card_pdf' id=class_i.id%}'"> 名牌產生 </button>
+                    <!--<button type="button" data-toggle="collapse" data-target="#student_table{{class_i.id}}" id={{class_i.class_id}}> 學員列表 </button>-->
+                    <button type="button" class="add-student-to-class"> 加入學員 </button>
+                    <button type="button" class="add-scheduled-class"> 建立周期 </button>
+                    <button type="button" class="add-class-group"> 建立組別 </button>
+                    <button type="button" class="add-group-to-class"> 升級 </button>
+                </td>
+                <td colspan="6" name="status" data-value="{{ class_i.status|default_if_none:"" }}"><b>狀態:</b> {{ class_i.status|default_if_none:"" }}</td>
+            </tr>
+            <tr>
+                <td colspan="6" name="teacher" data-value="{{ class_i.teacher|default_if_none:"" }}"><b>負責:</b> {{ class_i.teacher|default_if_none:"" }}</td>
+                <td colspan="6" name="supervisor" data-value="{{ class_i.supervisor|default_if_none:"" }}"><b>監督:</b> {{ class_i.supervisor|default_if_none:"" }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" name="monitor" data-value="{{ class_i.monitor|default_if_none:"" }}"><b>總學院張:</b> {{ class_i.monitor|default_if_none:"" }}</td>
+                <td colspan="3" name="assistant_monitor1" data-value="{{ class_i.assistant_monitor1|default_if_none:"" }}"><b>副總學院張1:</b> {{ class_i.assistant_monitor1|default_if_none:"" }}</td>
+                <td colspan="3" name="assistant_monitor2" data-value="{{ class_i.assistant_monitor2|default_if_none:"" }}"><b>副總學院張2:</b> {{ class_i.assistant_monitor2|default_if_none:"" }}</td>
+                <td colspan="3" name="assistant_monitor3" data-value="{{ class_i.assistant_monitor3|default_if_none:"" }}"><b>副總學院張3:</b> {{ class_i.assistant_monitor3|default_if_none:"" }}</td>
+            </tr>
+            <tr>
+                <td colspan="1" name="number_of_classes" data-value="{{ class_i.number_of_classes|default_if_none:"" }}"><b>總堂數:</b> {{ class_i.number_of_classes|default_if_none:"" }}</td>
+                <td colspan="1" name="number_of_classes_to_graduate" data-value="{{ class_i.number_of_classes_to_graduate|default_if_none:"" }}"><b>可結業總堂數:</b> {{ class_i.number_of_classes_to_graduate|default_if_none:"" }}</td>
+                <td colspan="1" name="number_of_classes_to_makeup" data-value="{{ class_i.number_of_classes_to_makeup|default_if_none:"" }}"><b>補課最多:</b> {{ class_i.number_of_classes_to_makeup|default_if_none:"" }}</td>
+                <td colspan="1" name="year" data-value="{{ class_i.year|default_if_none:"" }}"><b>年期:</b> {{ class_i.year|default_if_none:"" }}</td>
+                <td colspan="1" name="semester" data-value="{{ class_i.semester|default_if_none:"" }}"><b>學期:</b> {{ class_i.semester|default_if_none:"" }}</td>
+                <td colspan="1" name="study_time" data-value="{{ class_i.study_time|default_if_none:"" }}"><b>上課時間:</b> {{ class_i.study_time|default_if_none:"" }}</td>
+                <td colspan="2" name="start_date" data-value="{{ class_i.get_start_date|default_if_none:"" }}"><b>開始日期:</b> {{ class_i.get_start_date|default_if_none:"" }}</td>
+                <td colspan="2" name="graduation_date" data-value="{{ class_i.get_graduation_date|default_if_none:"" }}"><b>領證日期:</b> {{ class_i.get_graduation_date|default_if_none:"" }}</td>
+                <td colspan="2" name="" data-value=""><b>學員總數:</b> </td>
+            </tr>
+            <tr>
+                <td colspan="12" name="content"><b>內容簡介:</b> {{ class_i.introduction|default_if_none:"" }}</td>
+            </tr>
+            </tbody>
+        </table>
+        <br><h4>學員列表</h4>
+            <div id="student_table{{class_i.id}}">
+                <table class="tg" style="undefined;table-layout: fixed; width: 1219px">
+                        <colgroup>
+                            <col style="width: 51px">
+                            <col style="width: 51px">
+                            <col style="width: 51px">
+                            <col style="width: 51px">
+                            <col style="width: 41px">
+                            <col style="width: 51px">
+                            <col style="width: 121px">
+                            <col style="width: 81px">
+                            <col style="width: 31px">
+                            <!--<col style="width: 321px">-->
+                            <col style="width: 71px">
+                        </colgroup>
+                    <thead>
+                    <tr class="tg-baqh">
+                      <th>姓名</th><th>法名</th><th>上課狀態</th><th>組別</th><th>出席率</th><th>介紹人</th><th>電話</th><th>生日</th><th>性別</th>
+                      <!--<th>地址</th>-->
+                    </tr>
+                    </thead>
+                    <tbody >
+                    {% for student in class_i.students.all %}
+                    <tr id="student_in_class{{student.id}}@{{class_i.id}}" align="left" class_id={{class_i.id}} student_name="{{ student.name }}" study_status="">
+                        <td name="student"><a class="edit-student-in-class">{{ student.name }}</a></td>
+                        <td>{{ student.clerical_name }}</td>
+                        {% for class_for_student_i in student.in_class_student_set.all%}
+                            {% if class_for_student_i.class_of_student.id == class_i.id%}
+                                <td name="status">{{ class_for_student_i.status |default_if_none:""}}</td>
+                                <td name="group_of_student">{{ class_for_student_i.group_of_student|default_if_none:"" }}</td>
+                                <td>{{ class_for_student_i.present_check }}/{{ class_i.number_of_classes }}</td>
+                                <td name="invite_person">{{ class_for_student_i.invite_person|default_if_none:"" }}</td>
+                                <script>
+                                    document.getElementById("student_in_class{{student.id}}@{{class_i.id}}").setAttribute("study_status", "{{ class_for_student_i.status |default_if_none:""}}")
+                                    document.getElementById("student_in_class{{student.id}}@{{class_i.id}}").setAttribute("date_joined", "{{ class_for_student_i.get_joined_date |default_if_none:""}}")
+                                    document.getElementById("student_in_class{{student.id}}@{{class_i.id}}").setAttribute("group_of_student", "{{ class_for_student_i.group_of_student |default_if_none:""}}")
+                                    document.getElementById("student_in_class{{student.id}}@{{class_i.id}}").setAttribute("student_class_id", "{{ class_for_student_i.id }}")
+                                </script>
+                            {% endif %}
+                        {% endfor %}
+                        <td>{{ student.phone_num }}</td>
+                        <td name="date_joined">{{ student.get_date|default_if_none:"" }}</td>
+                        <td>{{ student.gender }}</td>
+                        <!--<td>{% if student.city != None %}{{ student.city }}{% endif%} {{ student.address }}</td>-->
+                        <!--<td>{% if student.invite_person != None %}{{ student.invite_person }}{% endif%}</td>-->
+                    </tr>
+                    {% endfor %}
+                    </tbody >
+                </table>
+            </div>
+        <br><h4>班中組別</h4>
+            <div id="class_group{{class_i.id}}">
+                <table class="tg" style="undefined;table-layout: fixed; width: 495px" nid="{{class_i.id}}">
+                        <colgroup>
+                            <col style="width: 51px">
+                            <col style="width: 81px">
+                            <col style="width: 81px">
+                            <col style="width: 81px">
+                            <col style="width: 81px">
+                        </colgroup>
+                    <thead>
+                    <tr class="tg-baqh">
+                      <th>操作</th><th>組別</th><th>學員張</th><th>副學員張1</th><th>副學員張2</th><th>副學員張3</th>
+                    </tr>
+                    </thead>
+                    <tbody >
+                    {% for class_group_i in class_i.class_group_set.all %}
+                    <tr value="{{class_group_i.id}}" nid="{{class_group_i.id}}">
+                        <td id="{{class_group_i.id}}"><a class="del-scheduled-class">刪除</a></td>
+                        <td name="name"><a class="edit-class-group">{{ class_group_i.name }}</a></td>
+                        <td name="leader">{{ class_group_i.leader |default_if_none:""}}</td>
+                        <td name="assistant_leader1">{{ class_group_i.assistant_leader1 |default_if_none:""}}</td>
+                        <td name="assistant_leader2">{{ class_group_i.assistant_leader2 |default_if_none:""}}</td>
+                        <td name="assistant_leader3">{{ class_group_i.assistant_leader3 |default_if_none:""}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody >
+                </table>
+            </div>
+        <br><h4>上課周期</h4>
+            <div id="scheduled_class_table{{class_i.id}}">
+                <table class="tg" style="undefined;table-layout: fixed; width: 495px">
+                        <colgroup>
+                            <col style="width: 51px">
+                            <col style="width: 81px">
+                            <col style="width: 81px">
+                            <col style="width: 81px">
+                            <col style="width: 201px">
+                        </colgroup>
+                    <thead>
+                    <tr class="tg-baqh">
+                      <th>操作</th><th>日期</th><th>上課地點</th><th>出席統計</th><th>上課內容</th>
+                    </tr>
+                    </thead>
+                    <tbody >
+                    {% for scheduled_class_i in class_i.scheduled_class_set.all %}
+                    <tr value="{{scheduled_class_i.id}}">
+                        <td id="{{scheduled_class_i.id}}"><a class="del-scheduled-class">刪除</a></td>
+                        <td name="date"><a class="edit-student-in-class">{{ scheduled_class_i.get_date }}</a></td>
+                        <td name="study_location">{{ scheduled_class_i.study_location }}</td>
+                        <td name="statistic"></td>
+                        <td name="content">{{ scheduled_class_i.content }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody >
+                </table>
+            </div>
+        
+    </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="addStudentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" class_id="" student_class_id="">
+        {% csrf_token %}
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="addStudentModalTitle">加入學員至班級</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="fm" class="form-horizontal">
+                        <div class="form-group">
+                            <label for="student" class="col-sm-2 control-label">學員</label>
+                            <div class="col-sm-4">
+                                <form>
+                                    <input id="student_input" name="student_input" class="form-control" list="student_datalist">
+                                    <datalist  name="student" id="student_datalist">
+                                        {% for student_i in student_all %}
+                                            <option value="{{ student_i.name }}" id="{{ student_i.id }}"></option>
+                                        {% endfor %}
+                                    </datalist>
+                                </form>
+                            </div>
+                            
+                            <label for="study_status" class="col-sm-2 control-label">學習狀態</label>
+                            <div class="col-sm-4">
+                                <input id="study_status_input" name="study_status_input" class="form-control" list="study_status_datalist">
+                                <datalist  name="study_status" id="study_status_datalist">
+                                    {% for study_status_i in study_status %}
+                                        <option value="{{study_status_i}}">{{ study_status_i }}</option>
+                                    {% endfor %}
+                                </datalist>
+                            </div>
+                            <label for="date_joined" class="col-sm-2 control-label">參加日期</label>
+                            <div class="col-sm-4">
+                                <input type="date" value="None" class="form-control" name="date_joined" placeholder="開始日期">
+                            </div>
+                            <label for="group_of_student" class="col-sm-2 control-label">組別</label>
+                            <div class="col-sm-4">
+                                <form>
+                                    <input id="group_of_student_input" name="group_of_student_input" class="form-control" list="group_of_student_datalist">
+                                    <datalist  name="group_of_student" id="group_of_student_datalist">
+                                        {% for group_i in group_of_student %}
+                                            <option value="{{ group_i }}" id="{{ group_i }}"></option>
+                                        {% endfor %}
+                                    </datalist>
+                                </form>
+                            </div>
+                            <label for="invite_person" class="col-sm-2 control-label">介紹人</label>
+                            <div class="col-sm-4">
+                                <form>
+                                    <input id="invite_person_input" name="invite_person_input" class="form-control" list="invite_person_datalist">
+                                    <datalist  name="invite_person" id="invite_person_datalist">
+                                        <option value="----" data-value="0"></option>
+                                        {% for student_i in student_all %}
+                                            <option value="{{ student_i.name }}" id="{{ student_i.id }}"></option>
+                                        {% endfor %}
+                                    </datalist>
+                                </form>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <span id="addStudentErrorMsg" style="color: red;"></span>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="btnAddStudentSaveAndContinue">儲存再繼續</button>
+                    <button type="button" class="btn btn-primary" id="btnAddStudentSave">儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="addScheduledClassModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" class_id="" student_class_id="">
+        {% csrf_token %}
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="addStudentModalTitle"></h4>
+                </div>
+                <div class="modal-body">
+                    <form id="fm" class="form-horizontal">
+                        <div class="form-group">
+                            <label for="study_time" class="col-sm-2 control-label">日期*</label>
+                            <div class="col-sm-4">
+                                <input type="date" value="None" class="form-control" name="study_time">
+                            </div>
+                            <label for="study_location" class="col-sm-2 control-label">上課地點</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" name="study_location" placeholder="上課地點">
+                            </div>
+                            <label for="content" class="col-sm-2 control-label">內容簡介</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" name="content" placeholder="內容簡介">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <span id="addScheduledClassErrorMsg" style="color: red;"></span>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="btnAddScheduledClassSaveAndContinue">儲存再繼續</button>
+                    <button type="button" class="btn btn-primary" id="btnAddScheduledClassSave">儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="delScheduledClassModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="alert alert-danger" role="alert">
+                <h3 id="delModalWarning"></h3>
+                <div>...<input style="display: none;" type="text" id="delNid" /></div>
+                <div>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button id="delScheduledClassConfirm" type="button" class="btn btn-danger">確定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="addClassGroupModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" class_id="" row_to_edit="">
+        {% csrf_token %}
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="addClassGroupModalTitle"></h4>
+                </div>
+                <div class="modal-body">
+                    <form id="fm" class="form-horizontal">
+                        <div class="form-group">
+                            <label for="name" class="col-sm-2 control-label">組別名稱</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" name="name" placeholder="班級名稱">
+                            </div>
+
+                            <label for="leader" class="col-sm-2 control-label">學員張</label>
+                            <div class="col-sm-4">
+                                <form>
+                                    <input id="leader_input" name="leader_input" class="form-control" list="leader_datalist">
+                                    <datalist  name="leader" id="leader_datalist">
+                                        <option value="----" data-value="0"></option>
+                                        {% for student_i in student_all %}
+                                            <option value="{{ student_i.name }}" id="{{ student_i.id }}"></option>
+                                        {% endfor %}
+                                    </datalist>
+                                </form>
+                            </div>
+                            
+                            <label for="assistant_leader1" class="col-sm-2 control-label">副學員長 1</label>
+                            <div class="col-sm-4">
+                                <form>
+                                    <input id="assistant_leader1_input" name="assistant_leader1_input" class="form-control" list="assistant_leader1_datalist">
+                                    <datalist  name="assistant_leader1" id="assistant_leader1_datalist">
+                                        <option value="----" data-value="0"></option>
+                                        {% for student_i in student_all %}
+                                            <option value="{{ student_i.name }}" id="{{ student_i.id }}"></option>
+                                        {% endfor %}
+                                    </datalist>
+                                </form>
+                            </div>
+                        
+                            <label for="assistant_leader2" class="col-sm-2 control-label">副學員長 2</label>
+                            <div class="col-sm-4">
+                                <form>
+                                    <input id="assistant_leader2_input" name="assistant_leader2_input" class="form-control" list="assistant_leader2_datalist">
+                                    <datalist  name="assistant_leader2" id="assistant_leader2_datalist">
+                                        <option value="----" data-value="0"></option>
+                                        {% for student_i in student_all %}
+                                            <option value="{{ student_i.name }}" id="{{ student_i.id }}"></option>
+                                        {% endfor %}
+                                    </datalist>
+                                </form>
+                            </div>
+                            
+                            <label for="assistant_leader3" class="col-sm-2 control-label">副學員長 3</label>
+                            <div class="col-sm-4">
+                                <form>
+                                    <input id="assistant_leader3_input" name="assistant_leader3_input" class="form-control" list="assistant_leader3_datalist">
+                                    <datalist  name="assistant_leader3" id="assistant_leader3_datalist">
+                                        <option value="----" data-value="0"></option>
+                                        {% for student_i in student_all %}
+                                            <option value="{{ student_i.name }}" id="{{ student_i.id }}"></option>
+                                        {% endfor %}
+                                    </datalist>
+                                </form>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <span id="errorAddClassGroupMsg" style="color: red;"></span>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="btnAddClassGroupSave">儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(function () {
+            bindEvent();
+
+            bindAddStudentSave();
+            bindEditStudentInClass()
+            bindScheduledClassDel();
+            bindScheduledClassDelConfirm();
+            bindScheduledClassAddConfirm();
+            bindClassGroupSave();
+            bindEditClassGroup();
+            //bindEditConfirm();
+
+            //bindTestAjaxList();
+        });
+        function bindEvent() {
+            $('#addBtn').click(function () {
+                $('#addClassModalTitle').text('創建班級')
+                $('#addClassModal').attr('row_to_edit', "")
+                $('#addClassModal').modal('show');
+            })
+            
+            $('#div_tb').on('click','.add-student-to-class',function () {
+                //$('#addClassModalTitle').text('創建班級')
+                $('#addStudentModal').attr('class_id', "")
+                $('#addStudentModal').attr('class_id', $(this).parent().parent().parent().parent().attr('nid'))
+                $('#addStudentModalTitle').text('加入學員至班級 - ' + $(this).parent().parent().parent().parent().attr('class_name'));
+                $('#addStudentErrorMsg').text("");
+                $('#addStudentModal').modal('show');
+            })
+            $('#div_tb').on('click','.add-scheduled-class',function () {
+                $('#addScheduledClassModal').modal('show');
+                $('#addScheduledClassModal').attr('class_id', $(this).parent().parent().parent().parent().attr('nid'))
+            })
+            $('#div_tb').on('click','.add-class-group',function () {
+                $('#addClassGroupModal').modal('show');
+                $('#addClassGroupModalTitle').text('建立組別');
+                $('#addClassGroupModal').attr('class_id', $(this).parent().parent().parent().parent().attr('nid'))
+            })
+        }
+    
+    function bindAddStudentSave() {
+            $('#btnAddStudentSave').click(function () {
+                var postData = {};
+                var token = getCookie('csrftoken');
+                
+                onDlistInput($('#addStudentModal input[name="student_input"]')[0]);
+                onDlistInput($('#addStudentModal input[name="invite_person_input"]')[0]);
+                
+                $('#addStudentModal').find('input,select,datalist').each(function () {
+                    var v = $(this).val();
+                    var n = $(this).attr('name');
+                    if(v != '')postData[n] = v;
+                    console.log(n)
+                    console.log(v)
+                    console.log('----')
+                });
+                if(!postData.student || postData.student=='0' || postData.student=='-1'){
+                    $('#addStudentErrorMsg').text('請填寫有效學員');
+                    return
+                }
+                if(postData.invite_person=='-1'){
+                    $('#errorMsg').text('請填寫有效介紹學院');
+                    return
+                }
+                postData['class_of_student'] = $('#addStudentModal').attr('class_id');
+                postData['nid'] = $('#addStudentModal').attr('student_class_id')
+                $.ajax({
+                    url: '/student/add_student_to_class',
+                    type: 'POST',
+                    headers:{'X-CSRFToken': token},
+                    data: postData,
+                    success:function (arg) {
+                        // arg是字符串
+                        // JSON.parse将字符串转换成字典， json.loads
+                        var dict = JSON.parse(arg);
+                        if(dict.status){
+                            //location.reload();
+                            //createRow(row_to_edit, postData, dict.nid, dict.status, dict.supervisor, dict.monitor, dict.assistant_monitor1, dict.assistant_monitor3, dict.study_time);
+                            $('#addStudentModal').modal('hide');
+                            window.location.reload();
+                        }else {
+                            $('#addStudentErrorMsg').text(dict.message);
+                        }
+                    }
+                })
+
+            });
+    }
+    function bindScheduledClassDel() {
+        $('#div_tb').on('click','.del-scheduled-class',function () {
+            console.log('show')
+            $('#delScheduledClassModal').modal('show');
+            $('#delModalWarning').text('刪除此周期');
+            // 回去当前行的ID
+            //console.log($(this).parent()[0].id)
+            $('#delNid').val($(this).parent()[0].id);
+        })
+    };
+    function bindScheduledClassDelConfirm() {
+        $('#delScheduledClassConfirm').click(function () {
+            var nid = $('#delNid').val();
+            console.log(nid)
+            $.ajax({
+                url: '/student/del_scheduled_class',
+                type: 'POST',
+                headers:{'X-CSRFToken': getCookie('csrftoken')},
+                data: {'nid': nid},
+                success:function (arg) {
+                    var dict = JSON.parse(arg);
+                    if(dict.status){
+                        window.location.reload();
+                    }
+                    
+                }
+            })
+            
+        });
+        $('#calConfirm').click(function() {
+            $('#delModal').modal('hide');
+        });
+    }
+    function bindEditStudentInClass() {
+            $('#div_tb').on('click','.edit-student-in-class',function () {
+                student_info = $(this).parent().parent()
+                $('#addStudentModalTitle').text('修正學員的學習資料: ' + student_info.attr('student_name'))
+                $("#addStudentModal input[name='name']").val(student_info.attr('class_name'))
+                student_info.find('td').each(function () {
+                     // cls_id
+                    var v = $(this).text();
+                    var n = $(this).attr('name');
+                    console.log(n + '-' + v)
+                    console.log('----')
+                    $("#addStudentModal input[name='"+ n +"']").val(v)
+                    n = n + "_input"
+                    console.log(n + '-' + v)
+                    $("#addStudentModal input[name='"+ n +"']").val(v)
+                    
+                 });
+                $("#addStudentModal input[name='date_joined']").val(student_info.attr('date_joined'))
+                $("#addStudentModal input[name='study_status_input']").val(student_info.attr('study_status'))
+                $("#addStudentModal input[name='group_of_student']").val(student_info.attr('group_of_student'))
+                $('#addStudentModal').attr('student_class_id', student_info.attr('student_class_id'))
+                $('#addStudentModal').attr('class_id', student_info.attr('class_id'))
+                $('#addStudentModal').modal('show');
+            })
+        }
+    function bindScheduledClassAddConfirm(){
+        $('#btnAddScheduledClassSave').click(function () {
+            var postData = {};
+            var token = getCookie('csrftoken');
+
+            //onDlistInput($('#addScheduledClassModal input[name="study_time"]')[0]);
+            //onDlistInput($('#addStudentModal input[name="invite_person_input"]')[0]);
+            postData['class_to_schedule'] = $('#addScheduledClassModal').attr('class_id');
+            $('#addScheduledClassModal').find('input,select,datalist').each(function () {
+                var v = $(this).val();
+                var n = $(this).attr('name');
+                postData[n] = v;
+                console.log(n)
+                console.log(v)
+                console.log('----')
+            });
+            
+            if(postData.study_time=='' ){
+                $('#addScheduledClassErrorMsg').text('請填寫日期');
+                return
+            }
+            
+            $.ajax({
+                url: '/student/add_class_schedule',
+                type: 'POST',
+                headers:{'X-CSRFToken': token},
+                data: postData,
+                success:function (arg) {
+                    var dict = JSON.parse(arg);
+                    if(dict.status){
+                        window.location.reload();
+                    }
+                }
+            })
+        });
+    }
+    function bindClassGroupSave() {
+            $('#btnAddClassGroupSave').click(function () {
+                var postData = {};
+                var token = getCookie('csrftoken');
+                
+                onDlistInput($('#addClassGroupModal input[name="leader_input"]')[0]);
+                onDlistInput($('#addClassGroupModal input[name="assistant_leader1_input"]')[0]);
+                onDlistInput($('#addClassGroupModal input[name="assistant_leader2_input"]')[0]);
+                onDlistInput($('#addClassGroupModal input[name="assistant_leader3_input"]')[0]);
+                postData['class_of_group'] = $('#addClassGroupModal').attr('class_id');
+                $('#addClassGroupModal').find('input,select,datalist, checkbox').each(function () {
+                    var v = $(this).val();
+                    var n = $(this).attr('name');
+                    postData[n] = v;
+                    
+                    //checked
+                    if($(this)[0].type == 'checkbox'){
+                        postData[n] = $(this)[0].checked;
+                    }
+                    console.log(n)
+                    console.log(v)
+                    console.log('----')
+                });
+                
+                if(postData.name==''){
+                    $('#errorAddClassGroupMsg').text('請填寫組別名稱');
+                    return
+                }
+                if(postData.leader=='-1'){
+                    $('#errorAddClassGroupMsg').text('請填寫有效學員張');
+                    return
+                }
+                if(postData.assistant_leader1=='-1'){
+                    $('#errorAddClassGroupMsg').text('請填寫有效副學員張 1');
+                    return
+                }
+                if(postData.assistant_leader2=='-1'){
+                    $('#errorAddClassGroupMsg').text('請填寫有效副學員張 2');
+                    return
+                }
+                if(postData.assistant_leader3=='-1'){
+                    $('#errorAddClassGroupMsg').text('請填寫有效副學員張 3');
+                    return
+                }
+                postData['nid'] = $('#addClassGroupModal').attr('group_id')
+                console.log(postData.nid)
+                $.ajax({
+                    url: '/student/add_group_to_class',
+                    type: 'POST',
+                    headers:{'X-CSRFToken': token},
+                    data: postData,
+                    success:function (arg) {
+                        // arg是字符串
+                        // JSON.parse将字符串转换成字典， json.loads
+                        var dict = JSON.parse(arg);
+                        if(dict.status){
+                            //location.reload();
+                            //createRow(row_to_edit, postData, dict.nid, dict.status, dict.supervisor, dict.monitor, dict.assistant_monitor1, dict.assistant_monitor3, dict.study_time);
+                            
+                            $('#addClassGroupModal').modal('hide');
+                            window.location.reload();
+                        }else {
+                            $('#errorAddClassGroupMsg').text(dict.message);
+                        }
+                    }
+                })
+
+            });
+    }
+    function bindEditClassGroup() {
+            $('#div_tb').on('click','.edit-class-group',function () {
+                student_info = $(this).parent().parent()
+                $('#addClassGroupModalTitle').text('修正班中組別資料: ' + student_info.attr('student_name'))
+                $("#addClassGroupModal input[name='name']").val(student_info.attr('class_name'))
+                student_info.find('td').each(function () {
+                     // cls_id
+                    var v = $(this).text();
+                    var n = $(this).attr('name');
+                    console.log(n + '-' + v)
+                    console.log('----')
+                    $("#addClassGroupModal input[name='"+ n +"']").val(v)
+                    n = n + "_input"
+                    console.log(n + '-' + v)
+                    $("#addClassGroupModal input[name='"+ n +"']").val(v)
+                    
+                 });
+                console.log($(this).parent().parent().attr('nid'))
+                $('#addClassGroupModal').attr('class_id', $(this).parent().parent().parent().parent().attr('nid'))
+                $('#addClassGroupModal').attr('group_id', $(this).parent().parent().attr('nid'))
+                $('#addClassGroupModal').modal('show');
+            })
+    }
+    </script>
+{% endblock %}
+
+

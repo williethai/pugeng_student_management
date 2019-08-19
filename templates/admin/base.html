@@ -66,6 +66,8 @@
            <li {% block menu_active_form_student %}{% endblock %}><a href="{% url 'form_student' %}">學員</a></li>
            <li {% block menu_active_form_class %}{% endblock %}><a href="{% url 'form_class' %}">班級</a></li>
            <li {% block menu_active_form_present_check %}{% endblock %}><a href="{% url 'form_present_check' %}">點名</a></li>
+           <li {% block menu_active_form_makeup_class %}{% endblock %}><a href="{% url 'form_makeup_class' %}">補課</a></li>
+           <li {% block menu_active_form_mountain_back %}{% endblock %}><a href="{% url 'form_present_check' %}">回山</a></li>
         </ul>
     </div>
     {% endblock %}

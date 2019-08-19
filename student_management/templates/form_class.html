@@ -61,9 +61,10 @@
             <tr>
                 <td colspan="6"><a class="edit-row"><strong>{{ class_i.to_str }} - {{ class_i.year|default_if_none:""}} - {{ class_i.semester|default_if_none:"" }}</strong></a>
                     <button type="button" class="del-row"> 刪除 </button>
-                    <button type="button" onclick="window.location.href ='{% url 'name_card_pdf' id=class_i.id%}'"> 名牌產生 </button>
-                    <button type="button" data-toggle="collapse" data-target="#student_table{{class_i.id}}" id={{class_i.class_id}}> 學員列表 </button>
-                    <button type="button" class="add-student-to-class"> 加入學員 </button>
+                    <!--<button type="button" onclick="window.location.href ='{% url 'name_card_pdf' id=class_i.id%}'"> 名牌產生 </button>-->
+                    <!--<button type="button" data-toggle="collapse" data-target="#student_table{{class_i.id}}" id={{class_i.class_id}}> 學員列表 </button>-->
+                    <button type="button" onclick="window.location.href ='{% url 'form_class_detail' id=class_i.id%}'"> 詳情 </button>
+                    <!--<button type="button" class="add-student-to-class"> 加入學員 </button>-->
                 </td>
                 <td colspan="6" name="status" data-value="{{ class_i.status|default_if_none:"" }}"><b>狀態:</b> {{ class_i.status|default_if_none:"" }}</td>
             </tr>
@@ -110,15 +111,7 @@
                         </colgroup>
                     <thead>
                     <tr class="tg-baqh">
-                      <th>姓名</th>
-                      <th>法名</th>
-                      <th>上課狀態</th>
-                      <th>組別</th>
-                      <th>出席率</th>
-                      <th>介紹人</th>
-                      <th>電話</th>
-                      <th>生日</th>
-                      <th>性別</th>
+                      <th>姓名</th><th>法名</th><th>上課狀態</th><th>組別</th><th>出席率</th><th>介紹人</th><th>電話</th><th>生日</th><th>性別</th>
                       <!--<th>地址</th>-->
                     </tr>
                     </thead>
@@ -308,6 +301,11 @@
                             <div class="col-sm-10">
                                 <input type="text" class="form-control" name="introduction" placeholder="簡介">
                             </div>
+                            <label for="auto_create_group" class="col-sm-2 control-label">自動產生堂</label>
+                            <div class="col-sm-1">
+                                <input type="checkbox" class="form-control" name="auto_create_group" checked>
+                            </div>
+
                         </div>
                     </form>
                 </div>
@@ -408,13 +406,13 @@
         $(function () {
             bindEvent();
 
-            bindSave();
+            bindClassSave();
             bindDel();
             bindDelConfirm();
-            bindEdit();
+            bindClassEdit();
             bindAddStudentSave();
-            bindEditStudentInClass()
-            //bindEditConfirm();
+            bindClassEditStudentInClass()
+            //bindClassEditConfirm();
 
             //bindTestAjaxList();
         });
@@ -434,7 +432,7 @@
                 $('#addStudentModal').modal('show');
             })
         }
-        function bindSave() {
+        function bindClassSave() {
             $('#btnSave').click(function () {
                 var postData = {};
                 var token = getCookie('csrftoken');
@@ -446,10 +444,15 @@
                 onDlistInput($('#addClassModal input[name="assistant_monitor2_input"]')[0]);
                 onDlistInput($('#addClassModal input[name="assistant_monitor3_input"]')[0]);
                 
-                $('#addClassModal').find('input,select,datalist').each(function () {
+                $('#addClassModal').find('input,select,datalist, checkbox').each(function () {
                     var v = $(this).val();
                     var n = $(this).attr('name');
                     if(v != '')postData[n] = v;
+                    
+                    //checked
+                    if($(this)[0].type == 'checkbox'){
+                        postData[n] = $(this)[0].checked;
+                    }
                     console.log(n)
                     console.log(v)
                     console.log('----')
@@ -475,6 +478,24 @@
                     $('#errorMsg').text('請填寫有效介監督');
                     return
                 }
+                console.log(postData.auto_create_group)
+                if(postData.auto_create_group == true){
+                    if(postData.start_date == '' || !postData.start_date){
+                        $('#errorMsg').text('選擇自動產生堂，必須填寫開始日期');
+                        return
+                    }
+                    if(postData.graduation_date == '' || !postData.graduation_date){
+                        $('#errorMsg').text('選擇自動產生堂，必須填寫領證日期');
+                        return
+                    }
+                    var x = new Date(postData.start_date);
+                    var y = new Date(postData.graduation_date);
+                    if(y < x){
+                        $('#errorMsg').text('開始日期或是領證日期選擇錯誤');
+                        return
+                    }
+
+                }
                 postData['nid'] = $('#addClassModal').attr('class_id')
                 var row_to_edit = $('#addClassModal').attr('row_to_edit')
                 $.ajax({
@@ -489,6 +510,13 @@
                         if(dict.status){
                             //location.reload();
                             //createRow(row_to_edit, postData, dict.nid, dict.status, dict.supervisor, dict.monitor, dict.assistant_monitor1, dict.assistant_monitor3, dict.study_time);
+                            var startDate = new Date(dict.start_date);
+                            var graduationDate = new Date(dict.graduation_date);
+                            while(startDate <= graduationDate){
+                                classScheduleCreate("", dict.nid, startDate.getFullYear() + "-" + (startDate.getMonth() + 1) + "-" + startDate.getDate(), token)
+                                console.log(startDate.getFullYear() + "-" + (startDate.getMonth() + 1) + "-" + startDate.getDate())
+                                startDate = new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+                            }
                             $('#addClassModal').modal('hide');
                             window.location.reload();
                         }else {
@@ -499,7 +527,7 @@
 
             });
     }
-    function bindEdit() {
+    function bindClassEdit() {
         $('#div_tb').on('click','.edit-row',function () {
             class_table = $(this).parent().parent().parent().parent()
             class_info = $(this).parent().parent().parent()
@@ -604,7 +632,7 @@
 
             });
     }
-    function bindEditStudentInClass() {
+    function bindClassEditStudentInClass() {
         $('#div_tb').on('click','.edit-student-in-class',function () {
             student_info = $(this).parent().parent()
             $('#addStudentModalTitle').text('修正學員的學習資料: ' + student_info.attr('student_name'))
@@ -627,6 +655,24 @@
             $('#addStudentModal').attr('student_class_id', student_info.attr('student_class_id'))
             $('#addStudentModal').attr('class_id', student_info.attr('class_id'))
             $('#addStudentModal').modal('show');
+        })
+    }
+    function classScheduleCreate(nid, class_to_schedule, study_time, token) {
+        var postData = {}
+        postData['nid'] = nid
+        postData['class_to_schedule'] = class_to_schedule
+        postData['study_time'] = study_time
+        $.ajax({
+            url: '/student/add_class_schedule',
+            type: 'POST',
+            headers:{'X-CSRFToken': token},
+            data: postData,
+            success:function (arg) {
+                var dict = JSON.parse(arg);
+                if(dict.status){
+                
+                }
+            }
         })
     }
     </script>

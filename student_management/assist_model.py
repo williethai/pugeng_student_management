@@ -43,6 +43,13 @@ class StudySemester(models.Model):
     semester = models.CharField(max_length=10, default='')
     def __str__(self):
         return self.semester
+class MakeUpClassBookingRecord(models.Model):
+    make_up_date = models.DateField(null=True, blank=True)
+    make_up_time = models.CharField(max_length=10, default='', blank=True, null=True)
+    booking_record = models.IntegerField(default=0, blank=True)
+    class Meta:
+        unique_together = ('make_up_date', 'make_up_time')
+
 ##############Model Admin
 class Gender_Admin(admin.ModelAdmin):
     list_display = (['gender'])
@@ -67,3 +74,6 @@ class StudyYear_Admin(admin.ModelAdmin):
     
 class StudySemester_Admin(admin.ModelAdmin):
     list_display = (['semester'])
+
+class MakeUpClassBookingRecord_Admin(admin.ModelAdmin):
+    list_display = (['make_up_date', 'make_up_time', 'booking_record'])

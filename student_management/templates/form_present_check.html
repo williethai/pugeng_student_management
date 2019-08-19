@@ -22,20 +22,24 @@
 .tg .tg-lqy6{text-align:right;vertical-align:top}
 .tg .tg-0lax{text-align:left;vertical-align:top}
 </style>
-<script src="{% static 'js/restful.js' %}"></script>
+<<script src="{% static 'js/restful.js' %}"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 <h1>各班點名表</h1>
-    <form action="" method="get" style="width:810px"><fieldset><legend><strong>篩選</strong></legend>
-            {{ classes.form.as_table }}
-        
+    <form action="" method="get" style="width:300px"><fieldset><legend><strong>篩選</strong></legend>
+        <label for="class_to_query">班別</label>
+            <select name="class_to_query">
+                {% for class_to_query_i in class_to_query %}
+                    <option value="{{class_to_query_i.id}}">{{ class_to_query_i }}</option>
+                {% endfor %}
+            </select>
         <input type="submit" />
     </fieldset></form>
     <br>
-    {% for class_i in classes.qs %}
+    {% if class_i != None %}
     <div>
         <table class="tg" style="undefined;table-layout: fixed; width: 810px">
             <colgroup>
@@ -45,7 +49,7 @@
                 <col style="width: 201px">
             </colgroup>
             <tr>
-                <td colspan="4"><strong>{{ class_i.to_str }}</strong></td>
+                <td colspan="4"><a href="{% url 'form_class_detail' id=class_i.id%}"><strong>{{ class_i.to_str }}</strong></a></td>
             </tr>
             <tr>
                 <td>狀態: {{ class_i.status }}</td>
@@ -54,26 +58,39 @@
                 <td>學員總數: {{ class_i.students.all.count }}</td>
             </tr>
         </table>
-        <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#studentpresent_table{{class_i.class_id}}" id={{class_i.class_id}}>點名列表</button>
-          <div id="studentpresent_table{{class_i.class_id}}" class="collapse">
-                <table class="tg" style="undefined;table-layout: fixed; width: 1200px">
-                    <thead align="center"><tr>
-                        <th>姓名</th>
-                        <th>法名</th>
+        <br>
+        <!--<button type="button" class="btn btn-info" data-toggle="collapse" data-target="#studentpresent_table{{class_i.class_id}}" id={{class_i.class_id}}>點名列表</button>-->
+          <!--<div id="studentpresent_table{{class_i.class_id}}" class="collapse">-->
+          <div id="studentpresent_table{{class_i.class_id}}">
+                <table class="tg" style="undefined;table-layout: fixed; width: 1500px">
+                    <colgroup>
+                        <col style="width: 71px">
+                        <col style="width: 71px">
                         {% for scheduled_class_i in class_i.scheduled_class_set.all %}
-                            <th>{{ scheduled_class_i.get_date }}</th>
+                            <col style="width: 21px">
+                        {% endfor %}
+                    </colgroup>
+                    <thead align="center"><tr>
+                        <th align="center">姓名</th>
+                        <th align="center">法名</th>
+                        {% for scheduled_class_i in class_i.scheduled_class_set.all %}
+                            <th align="center">{{ scheduled_class_i.get_date }}</th>
                         {% endfor %}
                     </tr></thead>
                     {% for student in class_i.students.all %}
                         {% for class_for_student_i in student.in_class_student_set.all%}
-                            {% if "學習中" == class_for_student_i.status.status and class_for_student_i.class_of_student.class_id == class_i.class_id%}
+                            {% if "上課中" == class_for_student_i.status and class_for_student_i.class_of_student.class_id == class_i.class_id%}
                                 <tr align="center">
                                     <td>{{ student.name }}</td>
                                     <td>{{ student.clerical_name }}</td>
                                     {% for scheduled_class_i in class_i.scheduled_class_set.all %}
+                                        <script>
+                                        </script>
                                         {% for student_class_schedule_i in scheduled_class_i.scheduled_class.all %}
-                                            {% if student_class_schedule_i.student.student_id == student.student_id and student_class_schedule_i.class_of_student.class_id == class_i.class_id%}
-                                                    <td><form action="" method="POST">{% csrf_token %}<input type="checkbox" {% if student_class_schedule_i.present_check%}checked{% endif %} value={{student_class_schedule_i.id}} onChange="send(this)"></form></td>
+                                            <script>
+                                            </script>
+                                            {% if student_class_schedule_i.student.id == student.id and student_class_schedule_i.class_of_student.id == class_i.id%}
+                                                    <td><form action="" method="POST">{% csrf_token %}<input type="checkbox" {% if student_class_schedule_i.present_check%}checked{% endif %} value={{student_class_schedule_i.id}} url_for_rest="{{ request.get_host }} " onChange="updatePresentCheck(this, '{{student_class_schedule_i.id}}')" ></form></td>
                                             {% endif %}
                                         {% endfor %}
                                     {% endfor %}
@@ -83,8 +100,27 @@
                     {% endfor %}
                 </table>
           </div>
-    {% endfor %}
     </div>
+    {% endif%}
+    <script>
+        function updatePresentCheck(object, nid){
+            console.log(object.checked)
+            var data = {}
+            data['nid'] = nid
+            data['present_check'] = object.checked
+            $.ajax({
+                url: '/student/present_check_update',
+                type: 'POST',
+                headers:{'X-CSRFToken': getCookie('csrftoken')},
+                data: data,
+                success:function (arg) {
+                    var dict = JSON.parse(arg);
+                    if(dict.status){
+                    }
+                }
+            })
+        }
+    </script>
 {% endblock %}
 
 

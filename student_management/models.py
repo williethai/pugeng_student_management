@@ -40,6 +40,8 @@ class Student(models.Model):
     emergency_contact_phone = models.CharField(max_length=20, default='', blank=True, verbose_name='緊急聯絡電話')
     date_joined = models.DateField(null=True, blank=True, verbose_name='參加日期')
     #create_at = models.DateTimeField()
+    def get_contact_number(self):
+        return self.phone_num
     def list_classes(self):
         return "\n".join(str(c.name + ':' + c.status.status) for c in self.class_of_student.all())
     def __str__(self):
@@ -134,9 +136,11 @@ class ClassStudentPresentFilter(django_filters.FilterSet):
         fields = ['name', 'year', 'semester', 'study_time']
 class Class_Schedule(models.Model):
     class_to_schedule = models.ForeignKey(Class, on_delete=models.CASCADE, default='', related_name='scheduled_class_set', verbose_name='班別')
-    study_time = models.DateField(null=True, blank=True, default='', verbose_name='上課時間')
+    study_time = models.DateField(default='0000-00-00', verbose_name='上課時間')
     study_location = models.CharField(max_length=100, default='精舍', null=True, blank=True, verbose_name='上課地點')
     content  = models.CharField(max_length=2000, default='', null=True, blank=True, verbose_name='上課內容')
+    class Meta:
+        unique_together = ('class_to_schedule', 'study_time')
     @property
     def get_date(self):
         return str(self.study_time.strftime('%m/%d'))
@@ -148,23 +152,24 @@ class Class_Schedule(models.Model):
         super().save(*args, **kwargs)
         for student_i in self.class_to_schedule.students.all():
             Student_Class_Schedule(student=student_i, class_of_student=self.class_to_schedule, scheduled_class=self, 
-                student_class=student_i.in_class_student_set.filter(class_of_student=self.class_to_schedule.class_id)[0], note="", present_check=False).save()
-        Class.objects.filter(pk=self.class_to_schedule.class_id).update(number_of_classes=self.class_to_schedule.scheduled_class_set.all().count())
+                student_class=student_i.in_class_student_set.filter(class_of_student=self.class_to_schedule.id)[0], note="", present_check=False).save()
+        Class.objects.filter(pk=self.class_to_schedule.id).update(number_of_classes=self.class_to_schedule.scheduled_class_set.all().count())
         
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
-        Class.objects.filter(pk=self.class_to_schedule.class_id).update(number_of_classes=self.class_to_schedule.scheduled_class_set.all().count())
+        Class.objects.filter(pk=self.class_to_schedule.id).update(number_of_classes=self.class_to_schedule.scheduled_class_set.all().count())
         
 class Class_Group(models.Model):
     name = models.CharField(max_length=60, default='', verbose_name='組別')
     class_of_group = models.ForeignKey(Class, on_delete=models.CASCADE, default='', related_name='class_group_set', verbose_name='班別')
-    leader = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='group_leader_set', verbose_name='學員長')
-    assistant_leader1 = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='assist1_group_leader_set', verbose_name='副學員長1')
-    assistant_leader2 = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='assist2_group_leader_set', verbose_name='副學員長2')
-    assistant_leader3 = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='assist3_group_leader_set', verbose_name='副學員長3')
+    leader = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='group_leader_set', verbose_name='學員長', null=True, blank=True)
+    assistant_leader1 = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='assist1_group_leader_set', verbose_name='副學員長1', null=True, blank=True)
+    assistant_leader2 = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='assist2_group_leader_set', verbose_name='副學員長2', null=True, blank=True)
+    assistant_leader3 = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='assist3_group_leader_set', verbose_name='副學員長3', null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "班中組別"
+        unique_together = ('name', 'class_of_group')
     def __str__(self):
         return str(self.class_of_group.__str__() + ' 組: ' + self.name)
 
@@ -209,12 +214,22 @@ class Student_Class_Schedule(models.Model):
     scheduled_class = models.ForeignKey(Class_Schedule, on_delete=models.CASCADE, default='', related_name='scheduled_class')
     present_check = models.BooleanField(default=False, verbose_name='出席')
     make_up_class = models.BooleanField(default=False, verbose_name='補課狀態')
-
-    #study_time = models.DateField(default='0000-00-00', verbose_name='上課時間')
+    make_up_date = models.DateField(null=True, blank=True, verbose_name='補課日期')
+    make_up_time = models.CharField(max_length=10, default='', blank=True, null=True, verbose_name='補課時段')
     note = models.CharField(max_length=100, default='', null=True, blank=True, verbose_name='備註')
     class Meta:
         verbose_name_plural = "班中學員出席"
         #unique_together = ('student', 'class_of_student', 'scheduled_class')
+    def get_class_date(self):
+        if self.scheduled_class.study_time:
+            return str(self.scheduled_class.study_time.strftime('%Y-%m-%d'))
+        else:
+            return ""
+    def get_make_up_date(self):
+        if self.make_up_date:
+            return str(self.make_up_date.strftime('%Y-%m-%d'))
+        else:
+            return ""
     def __str__(self):
         return str(self.id) + ' - ' + str(self.class_of_student.__str__() + ' - ' + self.student.__str__() + ' - ' + str(self.scheduled_class.study_time) )
     def save(self, *args, **kwargs):

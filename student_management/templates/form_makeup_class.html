@@ -1,0 +1,274 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+{% load static %}
+
+
+{% block title %}點名表{% endblock %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />{% endblock %}
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block menu_active_form_makeup_class %}class='active'{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/table.css' %}"/>
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#aabcfe;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#aabcfe;color:#669;background-color:#e8edff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#aabcfe;color:#039;background-color:#b9c9fe;}
+.tg .tg-hmp3{background-color:#D2E4FC;text-align:left;vertical-align:top}
+.tg .tg-baqh{text-align:center;vertical-align:top}
+.tg .tg-mb3i{background-color:#D2E4FC;text-align:right;vertical-align:top}
+.tg .tg-lqy6{text-align:right;vertical-align:top}
+.tg .tg-0lax{text-align:left;vertical-align:top}
+.tg .focus {background-color:Blue;}
+.tg .tr:hover {background-color:Blue;}
+</style>
+<script src="{% static 'js/restful.js' %}"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+<h1>預約補課</h1>
+    <form action="" method="get" style="width:700px"><fieldset><legend><strong>篩選</strong></legend>
+        <label for="name">姓名</label>
+            <input type="text" name="name" placeholder="姓名">
+        <label for="class_to_query">班別</label>
+            <select name="class_to_query">
+                {% for class_to_query_i in class_to_query %}
+                    <option value="{{class_to_query_i.id}}">{{ class_to_query_i }}</option>
+                {% endfor %}
+            </select>
+        <input type="submit" />
+    </fieldset></form>
+    <br>
+    {% if class_i != None %}
+    <div>
+        <strong>需要補課學員</strong>
+                <table id="div_tb" class="tg" style="undefined;table-layout: fixed; width: 587px">
+                    <colgroup>
+                        <col style="width: 81px">
+                        <col style="width: 81px">
+                        <col style="width: 81px">
+                        <col style="width: 141px">
+                        <col style="width: 101px">
+                        <col style="width: 101px">
+                        <col style="width: 81px">
+                        <col style="width: 41px">
+                    </colgroup>
+                    <thead align="center"><tr>
+                        <th align="center">姓名</th>
+                        <th align="center">法名</th>
+                        <th align="center">組別</th>
+                        <th align="center">聯絡號碼</th>
+                        <th align="center">缺課日期</th>
+                        <th align="center">預約日期</th>
+                        <th align="center">預約時間</th>
+                        <th align="center">已經補課</th>
+                    </tr></thead>
+                    {% for student_class_schedule_i in student_class_schedule %}
+                        <tr align="center" nid="{{student_class_schedule_i.id}}" student_name="{{student_class_schedule_i.student.name}}" student_id="{{student_class_schedule_i.student.id}}" make_up_date="{{ student_class_schedule_i.get_make_up_date |default_if_none:''}}" make_up_time="{{ student_class_schedule_i.make_up_time |default_if_none:''}}">
+                            <td class='clickable-row'>{{ student_class_schedule_i.student.name }}</td>
+                            <td class='clickable-row'>{{ student_class_schedule_i.student.clerical_name |default_if_none:""}}</td>
+                            <td class='clickable-row'>{{ student_class_schedule_i.student_class.group_of_student |default_if_none:""}}</td>
+                            <td class='clickable-row'>{{ student_class_schedule_i.student.get_contact_number |default_if_none:""}}</td>
+                            <td class='clickable-row'>{{ student_class_schedule_i.get_class_date }}</td>
+                            <td class='clickable-row'>{{ student_class_schedule_i.get_make_up_date |default_if_none:""}}</td>
+                            <td class='clickable-row'>{{ student_class_schedule_i.make_up_time |default_if_none:""}}</td>
+                            <td><form action="" method="POST">{% csrf_token %}<input type="checkbox" {% if student_class_schedule_i.make_up_class%}checked{% endif %} nid={{student_class_schedule_i.id}} url_for_rest="{{ request.get_host }}" onChange="updateMakeUpClassCheck(this, '{{student_class_schedule_i.id}}')"></form></td>
+                        </tr>
+                    {% endfor %}
+                    
+                </table>
+    </div>
+    {% endif%}
+    <div class="modal fade" id="applyMakeUpClassModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" class_id="" student_class_id="">
+        {% csrf_token %}
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="applyMakeUpClassModalTitle"></h4>
+                    <span id="errorMakeUpClassMsg" style="color: red;"></span>
+                </div>
+                <div class="modal-body">
+                    <form id="fm" class="form-horizontal">
+                        <div class="form-group">
+                            <table id="make_up_time_tb" class="tg" style="margin: 0 auto; border:1px solid;text-align:center; undefined;table-layout: fixed; width: 386px">
+                                <colgroup>
+                                    <col style="width: 81px">
+                                    <col style="width: 61px">
+                                    <col style="width: 61px">
+                                    <col style="width: 61px">
+                                    <col style="width: 61px">
+                                    <col style="width: 61px">
+                                </colgroup>
+                                <tr align="center">
+                                    <td></td>
+                                    {% for period_of_time_i in period_of_time %}
+                                        <td>{{period_of_time_i}}</td>
+                                    {% endfor %}
+                                </tr>
+                                {% for date_list_i in makeup_date_list %}
+                                    <tr align="center">
+                                        <td>{{date_list_i.0.month|stringformat:'02d'}}-{{date_list_i.0.day|stringformat:'02d'}}</td>
+                                        <td class='clickable-row' date="{{date_list_i.0.year|stringformat:'02d'}}-{{date_list_i.0.month|stringformat:'02d'}}-{{date_list_i.0.day|stringformat:'02d'}}" period_of_time="{{period_of_time.0}}">{{date_list_i.1}}</td>
+                                        <td class='clickable-row' date="{{date_list_i.0.year|stringformat:'02d'}}-{{date_list_i.0.month|stringformat:'02d'}}-{{date_list_i.0.day|stringformat:'02d'}}" period_of_time="{{period_of_time.1}}">{{date_list_i.2}}</td>
+                                        <td class='clickable-row' date="{{date_list_i.0.year|stringformat:'02d'}}-{{date_list_i.0.month|stringformat:'02d'}}-{{date_list_i.0.day|stringformat:'02d'}}" period_of_time="{{period_of_time.2}}">{{date_list_i.3}}</td>
+                                        <td class='clickable-row' date="{{date_list_i.0.year|stringformat:'02d'}}-{{date_list_i.0.month|stringformat:'02d'}}-{{date_list_i.0.day|stringformat:'02d'}}" period_of_time="{{period_of_time.3}}">{{date_list_i.4}}</td>
+                                        <td class='clickable-row' date="{{date_list_i.0.year|stringformat:'02d'}}-{{date_list_i.0.month|stringformat:'02d'}}-{{date_list_i.0.day|stringformat:'02d'}}" period_of_time="{{period_of_time.4}}">{{date_list_i.5}}</td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="cancelMakeUpClassModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="alert alert-danger" role="alert">
+                <h3 id="cancelMakeUpClassWarning"></h3>
+                <div>...<input style="display: none;" type="text" id="delNid" /></div>
+                <div>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">關閉</button>
+                    <button id="cancelMakeUpClassConfirm" type="button" class="btn btn-danger">確定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var justClickedCell;
+        $(function () {
+            bindApplyMakeUpClass();
+            bindCancelMakeUpClassConfirm();
+        });
+        function updatePresentCheck(object, nid){
+            console.log(object.checked)
+            var data = {}
+            data['nid'] = nid
+            data['present_check'] = object.checked
+            $.ajax({
+                url: '/student/present_check_update',
+                type: 'POST',
+                headers:{'X-CSRFToken': getCookie('csrftoken')},
+                data: data,
+                success:function (arg) {
+                    var dict = JSON.parse(arg);
+                    if(dict.status){
+                    }
+                }
+            })
+        }
+        function bindApplyMakeUpClass() {
+            $('#div_tb').on('click','.clickable-row',function () {
+                make_up_date = $(this).attr('make_up_date')
+                make_up_time = $(this).attr('make_up_time')
+                if(make_up_date == '' && make_up_time == '')
+                {
+                    $('#applyMakeUpClassModal').attr('nid', $(this).attr('nid'))
+                    $('#applyMakeUpClassModal').attr('student', $(this).attr('student_id'))
+                    $('#applyMakeUpClassModalTitle').text('學員預約補課: ' + $(this).attr('student_name'));
+                    $('#applyMakeUpClassModal').modal('show');
+                }
+                else
+                {
+                    $('#cancelMakeUpClassModal').attr('nid', $(this).attr('nid'))
+                    $('#cancelMakeUpClassModal').attr('make_up_date', $(this).attr('make_up_date'))
+                    $('#cancelMakeUpClassModal').attr('make_up_time', $(this).attr('make_up_time'))
+                    $('#cancelMakeUpClassWarning').text($(this).attr('student_name') + ' - 取消補課: ' + make_up_date + ' ' + make_up_time)
+                    $('#cancelMakeUpClassModal').modal('show');
+                }
+            })
+            $('#make_up_time_tb').on('dblclick','.clickable-row',function () {
+                if(isNaN($(this).text()) ==  false)
+                {
+                    var data = {}
+                    console.log($('#applyMakeUpClassModal').attr('nid'))
+                    console.log($(this).attr('date'))
+                    console.log($(this).attr('period_of_time'))
+                    data['nid'] = $('#applyMakeUpClassModal').attr('nid')
+                    data['student'] = $('#applyMakeUpClassModal').attr('student')
+                    data['date'] = $(this).attr('date')
+                    data['period_of_time'] = $(this).attr('period_of_time')
+                    console.log(data)
+                    $.ajax({
+                        url: '/student/apply_for_make_up_class',
+                        type: 'POST',
+                        headers:{'X-CSRFToken': getCookie('csrftoken')},
+                        data: data,
+                        success:function (arg) {
+                            var dict = JSON.parse(arg);
+                            if(dict.status){
+                                window.location.reload();
+                            }
+                            else {
+                                $('#errorMakeUpClassMsg').text(dict.message);
+                            }
+                        }
+                    })
+                }
+            })
+            $('#make_up_time_tb').on('click','.clickable-row',function () {
+                if(isNaN($(this).text()) ==  false)
+                {
+                    if (justClickedCell != null)justClickedCell.removeClass('focus');
+                    justClickedCell = $(this)
+                    $(this).addClass('focus');
+                }
+            })
+        }
+    function bindCancelMakeUpClassConfirm() {
+        $('#cancelMakeUpClassConfirm').click(function () {
+            var data = {}
+            data['nid'] = $('#cancelMakeUpClassModal').attr('nid')
+            data['date'] = $('#cancelMakeUpClassModal').attr('make_up_date')
+            data['period_of_time'] = $('#cancelMakeUpClassModal').attr('make_up_time')
+            $.ajax({
+                url: '/student/cancel_make_up_class',
+                type: 'POST',
+                headers:{'X-CSRFToken': getCookie('csrftoken')},
+                data: data,
+                success:function (arg) {
+                    var dict = JSON.parse(arg);
+                    if(dict.status){
+                        window.location.reload();
+                    }
+                    
+                }
+            })
+            
+        });
+        $('#calConfirm').click(function() {
+            $('#delModal').modal('hide');
+        });
+    }
+    function updateMakeUpClassCheck(object, nid){
+            console.log(object.checked)
+            var data = {}
+            data['nid'] = nid
+            data['make_up_class'] = object.checked
+            console.log(data)
+            $.ajax({
+                url: '/student/makeup_class_check_update',
+                type: 'POST',
+                headers:{'X-CSRFToken': getCookie('csrftoken')},
+                data: data,
+                success:function (arg) {
+                    var dict = JSON.parse(arg);
+                    if(dict.status){
+                    }
+                }
+            })
+        }
+    </script>
+{% endblock %}
+
+

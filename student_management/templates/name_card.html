@@ -12,7 +12,7 @@
     }
 }
 </style>
-{% for student_class_i in student_class %}
+{% for student_class_i in two_student_list %}
 <table class="tg" style="undefined;table-layout: fixed; width: 783px">
 <colgroup>
 <col style="width: 78px">
@@ -24,37 +24,37 @@
 </colgroup>
   <tr>
     <th class="tg-jilt">班別:</th>
-    <th class="tg-v3c0" colspan="2">{{student_class_i.class_of_student.name}}</th>
+    <th class="tg-v3c0" colspan="2">{{student_class_i.first_std_class}}</th>
     <th class="tg-jilt">班別:</th>
-    <th class="tg-v3c0" colspan="2">{{student_class_i.class_of_student.name}}</th>
+    <th class="tg-v3c0" colspan="2">{{student_class_i.second_std_class}}</th>
   </tr>
   <tr>
     <td class="tg-jilt">組別:</td>
     <td class="tg-v3c0">group</td>
-    <td class="tg-v3c0" rowspan="3"><canvas id="qr_right{{student_class_i.student_qr_code}}"></canvas></td>
+    <td class="tg-v3c0" rowspan="3"><canvas id="qr_right{{student_class_i.first_std_qr}}"></canvas></td>
     <td class="tg-jilt">組別:</td>
     <td class="tg-v3c0">group</td>
-    <td class="tg-v3c0" rowspan="3"><canvas id="qr_left{{student_class_i.student_qr_code}}"></canvas></td>
+    <td class="tg-v3c0" rowspan="3"><canvas id="qr_left{{student_class_i.second_std_qr}}"></canvas></td>
   </tr>
 <script>
     (function() {
         var qr = new QRious({
-            element: document.getElementById('qr_right{{student_class_i.student_qr_code}}'),
-            value: '{{student_class_i.student_qr_code}}'
+            element: document.getElementById('qr_right{{student_class_i.first_std_qr}}'),
+            value: '{{student_class_i.first_std_qr}}'
         });
     })();
     (function() {
         var qr = new QRious({
-            element: document.getElementById('qr_left{{student_class_i.student_qr_code}}'),
-            value: '{{student_class_i.student_qr_code}}'
+            element: document.getElementById('qr_left{{student_class_i.second_std_qr}}'),
+            value: '{{student_class_i.second_std_qr}}'
         });
     })();
 </script>
   <tr>
     <td class="tg-jilt" rowspan="2">姓名:</td>
-    <td class="tg-v3c0" rowspan="2">{{student_class_i.student.name}}</td>
+    <td class="tg-v3c0" rowspan="2">{{student_class_i.first_std_name}}</td>
     <td class="tg-jilt" rowspan="2">姓名:</td>
-    <td class="tg-v3c0" rowspan="2">{{student_class_i.student.name}}</td>
+    <td class="tg-v3c0" rowspan="2">{{student_class_i.second_std_name}}</td>
   </tr>
   <tr>
   </tr>
