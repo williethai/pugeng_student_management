@@ -75,7 +75,7 @@ class Class(models.Model):
     name = models.CharField(max_length=60, default='', verbose_name='名稱')
     status = models.CharField(max_length=60, default='', verbose_name='狀態', null=True, blank=True)
     teacher = models.CharField(max_length=60, default='', verbose_name='負責師父', null=True, blank=True)
-    supervisor = models.CharField(max_length=60, default='', verbose_name='監督', null=True, blank=True)
+    supervisor = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='class_supervisor_set', verbose_name='監督', null=True, blank=True)
     monitor = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='class_monitor_set', verbose_name='總學員長', null=True, blank=True)
     assistant_monitor1 = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='assistant_monitor1_set', verbose_name='副總學員長1', null=True, blank=True)
     assistant_monitor2 = models.ForeignKey(Student, on_delete=models.CASCADE, default='', related_name='assistant_monitor2_set', verbose_name='副總學員長2', null=True, blank=True)

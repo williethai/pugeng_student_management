@@ -169,13 +169,18 @@
         }
         function bindApplyMakeUpClass() {
             $('#div_tb').on('click','.clickable-row',function () {
-                make_up_date = $(this).attr('make_up_date')
-                make_up_time = $(this).attr('make_up_time')
+                make_up_date = $(this).parent().attr('make_up_date')
+                make_up_time = $(this).parent().attr('make_up_time')
+                student_name = $(this).parent().attr('student_name')
+                nid = $(this).parent().attr('nid')
+                student_id = $(this).parent().attr('student_id')
+                console.log(make_up_date)
+                console.log(make_up_time)
                 if(make_up_date == '' && make_up_time == '')
                 {
-                    $('#applyMakeUpClassModal').attr('nid', $(this).attr('nid'))
-                    $('#applyMakeUpClassModal').attr('student', $(this).attr('student_id'))
-                    $('#applyMakeUpClassModalTitle').text('學員預約補課: ' + $(this).attr('student_name'));
+                    $('#applyMakeUpClassModal').attr('nid', nid)
+                    $('#applyMakeUpClassModal').attr('student', student_id)
+                    $('#applyMakeUpClassModalTitle').text('學員預約補課: ' + student_name);
                     $('#applyMakeUpClassModal').modal('show');
                 }
                 else
@@ -183,7 +188,7 @@
                     $('#cancelMakeUpClassModal').attr('nid', $(this).attr('nid'))
                     $('#cancelMakeUpClassModal').attr('make_up_date', $(this).attr('make_up_date'))
                     $('#cancelMakeUpClassModal').attr('make_up_time', $(this).attr('make_up_time'))
-                    $('#cancelMakeUpClassWarning').text($(this).attr('student_name') + ' - 取消補課: ' + make_up_date + ' ' + make_up_time)
+                    $('#cancelMakeUpClassWarning').text(student_name + ' - 取消補課: ' + make_up_date + ' ' + make_up_time)
                     $('#cancelMakeUpClassModal').modal('show');
                 }
             })

@@ -14,11 +14,12 @@ from rest_framework import serializers
 
 from datetime import datetime, date, timedelta
 from dateutil.relativedelta import *
+from time import sleep
 
 import json
 
 from .models import *
-
+from django.db.models import Q
 
 
 class StudentClassScheduleSerializer(serializers.ModelSerializer):
@@ -136,6 +137,7 @@ def form_class_detail(request, id):
         'semester': ['第一期','第二期'],
         'study_time': ['日','夜'],
         'study_status': ['上課中', '取消', '結業'],
+        'group_of_student': class_i.class_group_set.all(),
     }
     return render(request, 'form_class_detail.html', context=context)
 
@@ -183,8 +185,8 @@ def add_class(request):
             assistant_monitor3=None
             response['assistant_monitor3'] = ""
         print('456')    
-        if nid == '' or nid == '0' or nid == 0:
-            obj = Class.objects.create(
+        if nid == '' or nid == '0' or nid == 0 or nid == None:
+            new_class_obj = Class.objects.create(
                 name=request.POST.get('name'),
                 status=request.POST.get('status_input'),
                 teacher=request.POST.get('teacher'),
@@ -204,9 +206,46 @@ def add_class(request):
                 study_time=request.POST.get('study_time'),
                 introduction=request.POST.get('introduction'),
                 )
-            response['nid'] = obj.id
-            response['start_date'] = obj.start_date
-            response['graduation_date'] = obj.graduation_date
+            response['nid'] = new_class_obj.id
+            response['start_date'] = new_class_obj.start_date
+            response['graduation_date'] = new_class_obj.graduation_date
+            
+            #copy student data & group data if need to upgrade
+            if request.POST.get('is_upgrade') == 'true':
+                upgrade_from_class_id = request.POST.get('upgrade_from')
+                #students_in_class_to_upgrade = Student_Class.objects.filter(class_of_student=upgrade_from_class_id)
+                groups_in_class_to_upgrade = Class_Group.objects.filter(class_of_group=upgrade_from_class_id)
+                print('upgrade')
+                #copy groups & students
+                for group_i in groups_in_class_to_upgrade:
+                    print('old group id: ' + str(group_i.id))
+                    old_group_id = group_i.id
+                    group_i.class_of_group = new_class_obj
+                    group_i.id = None
+                    group_i.save()
+                    new_group_id = group_i.id
+                    print('new group id: ' + str(group_i.id))
+                    students_in_class_to_upgrade = Student_Class.objects.filter(group_of_student=old_group_id)
+                    for student_i in students_in_class_to_upgrade:
+                        student_i.class_of_student = new_class_obj
+                        student_i.id = None
+                        student_i.group_of_student = group_i
+                        student_i.date_joined = date.today()
+                        student_i.status = ""
+                        student_i.invite_person = None
+                        student_i.present_check = 0
+                        student_i.save()
+                #copy students with no group assigned
+                students_in_class_to_upgrade = Student_Class.objects.filter(Q(group_of_student=None) & Q(class_of_student=upgrade_from_class_id))
+                for student_i in students_in_class_to_upgrade:
+                    student_i.class_of_student = new_class_obj
+                    student_i.id = None
+                    student_i.date_joined = date.today()
+                    student_i.status = ""
+                    student_i.invite_person = None
+                    student_i.present_check = 0
+                    student_i.save()
+
         else: #Update new class
             obj = Class.objects.filter(id=str(nid)).update(
                 name=request.POST.get('name'),
@@ -311,27 +350,38 @@ def add_class_schedule(request):
     response = {'status':True,'message': None,'data':None}
     nid = request.POST.get('nid')
     class_to_schedule_id = request.POST.get('class_to_schedule')
-    study_time = request.POST.get('study_time')
+    start_date_str = request.POST.get('start_date')
+    graduation_date_str = request.POST.get('graduation_date')
     print(class_to_schedule_id)
-    print(study_time)
     try:
         
         if class_to_schedule_id != None and class_to_schedule_id!='0' and class_to_schedule_id!=0 and class_to_schedule_id!='':
             class_to_schedule=Class.objects.all().get(id=class_to_schedule_id)
         else:
             response['message'] = '用戶輸入錯誤'
-        if study_time == None and study_time=='0' and study_time==0 and study_time=='':
+        if start_date_str == None and start_date_str=='0' and start_date_str==0 and start_date_str=='':
             response['message'] = '用戶輸入錯誤'
-            
+        else:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        if graduation_date_str == None and graduation_date_str=='0' and graduation_date_str==0 and graduation_date_str=='':
+            response['message'] = '用戶輸入錯誤'
+        else:
+            graduation_date = datetime.strptime(graduation_date_str, '%Y-%m-%d').date()
+        print(start_date)
+        print(graduation_date)
         if nid == '' or nid == '0' or nid == 0 or nid == None:
-            obj = Class_Schedule.objects.create(
-                class_to_schedule=class_to_schedule,
-                study_time=study_time,
-                )
-            response['nid'] = obj.id
+            while start_date <= graduation_date:
+                print('create class sche')
+                sleep(0.2)
+                obj = Class_Schedule.objects.create(
+                    class_to_schedule=class_to_schedule,
+                    study_time=start_date,
+                    )
+                response['nid'] = obj.id
+                start_date += timedelta(days=7)
         else:
             pass
-        
+            
 
     except Exception as e:
         print(e)

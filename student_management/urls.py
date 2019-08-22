@@ -1,6 +1,7 @@
 from django.urls import path
 from django.conf.urls import url, include
 from .views import *
+from .views_for_excel import *
 
 urlpatterns = [
     path('form_student', form_student, name='form_student'),
@@ -23,6 +24,6 @@ urlpatterns = [
     path('check_in_qrcode', check_in_qrcode, name='check_in_qrcode'),
     path('name_card_pdf/<int:id>', name_card_pdf, name='name_card_pdf'),
     url(r'^api/student_class_schedule/update_student_attendance/(?P<pk>\d+)/$', StudentClassSchedulePartialUpdateView.as_view(), name='student_class_schedule_partial_update'),
-    url(r'^bucketlists/$', StudentClassSchedulePartialUpdateView.as_view(), name="create"),
+    path('export_student_csv', export_student_csv, name='export_student_csv'),
     path('', HomePageView.as_view(), name='home'),
 ]

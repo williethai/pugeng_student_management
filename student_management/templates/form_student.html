@@ -35,24 +35,39 @@
         <a class="btn btn-primary" id="addBtn">添加學員</a>
         <a class="btn btn-danger">删除學員</a>
     </div>
-    <form action="" method="get" style="width:1019px"><fieldset><legend><strong>篩選</strong></legend>
-            {{ students.form.as_table }}
-        
-        <input type="submit" />
+    <form action="" method="get" style="width:1019px"><fieldset><legend><strong>搜尋</strong></legend>
+        <label>姓名:</label>
+        <input name="name">
+        <label>性別:</label>
+        <select name="gender">
+            <option value="">---</option>
+            {% for gender_i in gender %}
+                <option value="{{gender_i.id}}">{{ gender_i }}</option>
+            {% endfor %}
+        </select>
+        <label>市:</label>
+        <select name="city">
+            <option value="">---</option>
+            {% for city_i in city %}
+                <option value="{{city_i.id}}">{{ city_i }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="搜尋">
+        <input type="submit" value="產生 excel 檔" formaction="{% url 'export_student_csv' %}">
     </fieldset></form>
     <br>
-    <table class="tg" style="undefined;table-layout: fixed; width: 1150px">
+    <table class="tg" style="undefined;table-layout: fixed; width: 1170px">
         <colgroup>
         <col style="width: 51px">
         <col style="width: 51px">
-        <col style="width: 71px">
+        <col style="width: 81px">
         <col style="width: 51px">
         <col style="width: 121px">
         <col style="width: 91px">
         <col style="width: 41px">
         <col style="width: 101px">
         <col style="width: 351px">
-        <col style="width: 71px">
+        <col style="width: 81px">
         <col style="width: 151px">
         </colgroup>
         <thead>

@@ -69,14 +69,14 @@
                 <td colspan="6" name="status" data-value="{{ class_i.status|default_if_none:"" }}"><b>狀態:</b> {{ class_i.status|default_if_none:"" }}</td>
             </tr>
             <tr>
-                <td colspan="6" name="teacher" data-value="{{ class_i.teacher|default_if_none:"" }}"><b>負責:</b> {{ class_i.teacher|default_if_none:"" }}</td>
+                <td colspan="6" name="teacher" data-value="{{ class_i.teacher|default_if_none:"" }}"><b>指導法師:</b> {{ class_i.teacher|default_if_none:"" }}</td>
                 <td colspan="6" name="supervisor" data-value="{{ class_i.supervisor|default_if_none:"" }}"><b>監督:</b> {{ class_i.supervisor|default_if_none:"" }}</td>
             </tr>
             <tr>
-                <td colspan="3" name="monitor" data-value="{{ class_i.monitor|default_if_none:"" }}"><b>總學院張:</b> {{ class_i.monitor|default_if_none:"" }}</td>
-                <td colspan="3" name="assistant_monitor1" data-value="{{ class_i.assistant_monitor1|default_if_none:"" }}"><b>副總學院張1:</b> {{ class_i.assistant_monitor1|default_if_none:"" }}</td>
-                <td colspan="3" name="assistant_monitor2" data-value="{{ class_i.assistant_monitor2|default_if_none:"" }}"><b>副總學院張2:</b> {{ class_i.assistant_monitor2|default_if_none:"" }}</td>
-                <td colspan="3" name="assistant_monitor3" data-value="{{ class_i.assistant_monitor3|default_if_none:"" }}"><b>副總學院張3:</b> {{ class_i.assistant_monitor3|default_if_none:"" }}</td>
+                <td colspan="3" name="monitor" data-value="{{ class_i.monitor|default_if_none:"" }}"><b>總學院長:</b> {{ class_i.monitor|default_if_none:"" }}</td>
+                <td colspan="3" name="assistant_monitor1" data-value="{{ class_i.assistant_monitor1|default_if_none:"" }}"><b>副總學員長1:</b> {{ class_i.assistant_monitor1|default_if_none:"" }}</td>
+                <td colspan="3" name="assistant_monitor2" data-value="{{ class_i.assistant_monitor2|default_if_none:"" }}"><b>副總學員長2:</b> {{ class_i.assistant_monitor2|default_if_none:"" }}</td>
+                <td colspan="3" name="assistant_monitor3" data-value="{{ class_i.assistant_monitor3|default_if_none:"" }}"><b>副總學員長3:</b> {{ class_i.assistant_monitor3|default_if_none:"" }}</td>
             </tr>
             <tr>
                 <td colspan="1" name="number_of_classes" data-value="{{ class_i.number_of_classes|default_if_none:"" }}"><b>總堂數:</b> {{ class_i.number_of_classes|default_if_none:"" }}</td>
@@ -94,56 +94,6 @@
             </tr>
             </tbody>
         </table>
-            <div id="student_table{{class_i.id}}" class="collapse">
-                <table class="tg" style="undefined;table-layout: fixed; width: 1219px">
-                        <colgroup>
-                            <col style="width: 51px">
-                            <col style="width: 51px">
-                            <col style="width: 51px">
-                            <col style="width: 51px">
-                            <col style="width: 41px">
-                            <col style="width: 51px">
-                            <col style="width: 121px">
-                            <col style="width: 81px">
-                            <col style="width: 31px">
-                            <!--<col style="width: 321px">-->
-                            <col style="width: 71px">
-                        </colgroup>
-                    <thead>
-                    <tr class="tg-baqh">
-                      <th>姓名</th><th>法名</th><th>上課狀態</th><th>組別</th><th>出席率</th><th>介紹人</th><th>電話</th><th>生日</th><th>性別</th>
-                      <!--<th>地址</th>-->
-                    </tr>
-                    </thead>
-                    <tbody >
-                    {% for student in class_i.students.all %}
-                    <tr id="student_in_class{{student.id}}@{{class_i.id}}" align="left" class_id={{class_i.id}} student_name="{{ student.name }}" study_status="">
-                        <td name="student"><a class="edit-student-in-class">{{ student.name }}</a></td>
-                        <td>{{ student.clerical_name }}</td>
-                        {% for class_for_student_i in student.in_class_student_set.all%}
-                            {% if class_for_student_i.class_of_student.id == class_i.id%}
-                                <td name="status">{{ class_for_student_i.status |default_if_none:""}}</td>
-                                <td name="group_of_student">{{ class_for_student_i.group_of_student|default_if_none:"" }}</td>
-                                <td>{{ class_for_student_i.present_check }}/{{ class_i.number_of_classes }}</td>
-                                <td name="invite_person">{{ class_for_student_i.invite_person|default_if_none:"" }}</td>
-                                <script>
-                                    document.getElementById("student_in_class{{student.id}}@{{class_i.id}}").setAttribute("study_status", "{{ class_for_student_i.status |default_if_none:""}}")
-                                    document.getElementById("student_in_class{{student.id}}@{{class_i.id}}").setAttribute("date_joined", "{{ class_for_student_i.get_joined_date |default_if_none:""}}")
-                                    document.getElementById("student_in_class{{student.id}}@{{class_i.id}}").setAttribute("group_of_student", "{{ class_for_student_i.group_of_student |default_if_none:""}}")
-                                    document.getElementById("student_in_class{{student.id}}@{{class_i.id}}").setAttribute("student_class_id", "{{ class_for_student_i.id }}")
-                                </script>
-                            {% endif %}
-                        {% endfor %}
-                        <td>{{ student.phone_num }}</td>
-                        <td name="date_joined">{{ student.get_date|default_if_none:"" }}</td>
-                        <td>{{ student.gender }}</td>
-                        <!--<td>{% if student.city != None %}{{ student.city }}{% endif%} {{ student.address }}</td>-->
-                        <!--<td>{% if student.invite_person != None %}{{ student.invite_person }}{% endif%}</td>-->
-                    </tr>
-                    {% endfor %}
-                    </tbody >
-                </table>
-            </div>
     {% endfor %}
     </div>
     <!-- Modal -->
@@ -174,9 +124,9 @@
                                 </datalist>
                             </div>
                             
-                            <label for="teacher" class="col-sm-2 control-label">負責師父</label>
+                            <label for="teacher" class="col-sm-2 control-label">指導師父</label>
                             <div class="col-sm-4">
-                                <input type="text" class="form-control" name="teacher" placeholder="負責師父">
+                                <input type="text" class="form-control" name="teacher" placeholder="指導師父">
                             </div>
                         
                             <label for="supervisor" class="col-sm-2 control-label">監督</label>
@@ -192,7 +142,7 @@
                                 </form>
                             </div>
                         
-                            <label for="monitor" class="col-sm-2 control-label">總學員張</label>
+                            <label for="monitor" class="col-sm-2 control-label">總學員長</label>
                             <div class="col-sm-4">
                                 <form>
                                     <input id="monitor_input" name="monitor_input" class="form-control" list="monitor_datalist">
@@ -410,11 +360,7 @@
             bindDel();
             bindDelConfirm();
             bindClassEdit();
-            bindAddStudentSave();
-            bindClassEditStudentInClass()
             //bindClassEditConfirm();
-
-            //bindTestAjaxList();
         });
         function bindEvent() {
             $('#addBtn').click(function () {
@@ -512,11 +458,16 @@
                             //createRow(row_to_edit, postData, dict.nid, dict.status, dict.supervisor, dict.monitor, dict.assistant_monitor1, dict.assistant_monitor3, dict.study_time);
                             var startDate = new Date(dict.start_date);
                             var graduationDate = new Date(dict.graduation_date);
+                            var start_date_str = startDate.getFullYear() + "-" + (startDate.getMonth() + 1) + "-" + startDate.getDate()
+                            var graduation_date_str = graduationDate.getFullYear() + "-" + (graduationDate.getMonth() + 1) + "-" + graduationDate.getDate()
+                            classScheduleCreate("", dict.nid, start_date_str, graduation_date_str, token)
+                            /*
                             while(startDate <= graduationDate){
                                 classScheduleCreate("", dict.nid, startDate.getFullYear() + "-" + (startDate.getMonth() + 1) + "-" + startDate.getDate(), token)
                                 console.log(startDate.getFullYear() + "-" + (startDate.getMonth() + 1) + "-" + startDate.getDate())
                                 startDate = new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
                             }
+                            */
                             $('#addClassModal').modal('hide');
                             window.location.reload();
                         }else {
@@ -632,36 +583,31 @@
 
             });
     }
-    function bindClassEditStudentInClass() {
-        $('#div_tb').on('click','.edit-student-in-class',function () {
-            student_info = $(this).parent().parent()
-            $('#addStudentModalTitle').text('修正學員的學習資料: ' + student_info.attr('student_name'))
-            $("#addStudentModal input[name='name']").val(student_info.attr('class_name'))
-            student_info.find('td').each(function () {
-                 // cls_id
-                var v = $(this).text();
-                var n = $(this).attr('name');
-                console.log(n + '-' + v)
-                console.log('----')
-                $("#addStudentModal input[name='"+ n +"']").val(v)
-                n = n + "_input"
-                console.log(n + '-' + v)
-                $("#addStudentModal input[name='"+ n +"']").val(v)
-                
-             });
-            $("#addStudentModal input[name='date_joined']").val(student_info.attr('date_joined'))
-            $("#addStudentModal input[name='study_status_input']").val(student_info.attr('study_status'))
-            $("#addStudentModal input[name='group_of_student']").val(student_info.attr('group_of_student'))
-            $('#addStudentModal').attr('student_class_id', student_info.attr('student_class_id'))
-            $('#addStudentModal').attr('class_id', student_info.attr('class_id'))
-            $('#addStudentModal').modal('show');
-        })
-    }
+
     function classScheduleCreate(nid, class_to_schedule, study_time, token) {
         var postData = {}
         postData['nid'] = nid
         postData['class_to_schedule'] = class_to_schedule
         postData['study_time'] = study_time
+        $.ajax({
+            url: '/student/add_class_schedule',
+            type: 'POST',
+            headers:{'X-CSRFToken': token},
+            data: postData,
+            success:function (arg) {
+                var dict = JSON.parse(arg);
+                if(dict.status){
+                
+                }
+            }
+        })
+    }
+    function classScheduleCreate(nid, class_to_schedule, start_date, graduation_date, token) {
+        var postData = {}
+        postData['nid'] = nid
+        postData['class_to_schedule'] = class_to_schedule
+        postData['start_date'] = start_date
+        postData['graduation_date'] = graduation_date
         $.ajax({
             url: '/student/add_class_schedule',
             type: 'POST',

@@ -57,12 +57,12 @@
                     <button type="button" class="add-student-to-class"> 加入學員 </button>
                     <button type="button" class="add-scheduled-class"> 建立周期 </button>
                     <button type="button" class="add-class-group"> 建立組別 </button>
-                    <button type="button" class="add-group-to-class"> 升級 </button>
+                    <button type="button" class="upgrade-class"> 升級 </button>
                 </td>
                 <td colspan="6" name="status" data-value="{{ class_i.status|default_if_none:"" }}"><b>狀態:</b> {{ class_i.status|default_if_none:"" }}</td>
             </tr>
             <tr>
-                <td colspan="6" name="teacher" data-value="{{ class_i.teacher|default_if_none:"" }}"><b>負責:</b> {{ class_i.teacher|default_if_none:"" }}</td>
+                <td colspan="6" name="teacher" data-value="{{ class_i.teacher|default_if_none:"" }}"><b>指導法師:</b> {{ class_i.teacher|default_if_none:"" }}</td>
                 <td colspan="6" name="supervisor" data-value="{{ class_i.supervisor|default_if_none:"" }}"><b>監督:</b> {{ class_i.supervisor|default_if_none:"" }}</td>
             </tr>
             <tr>
@@ -117,13 +117,13 @@
                         {% for class_for_student_i in student.in_class_student_set.all%}
                             {% if class_for_student_i.class_of_student.id == class_i.id%}
                                 <td name="status">{{ class_for_student_i.status |default_if_none:""}}</td>
-                                <td name="group_of_student">{{ class_for_student_i.group_of_student|default_if_none:"" }}</td>
+                                <td name="group_of_student">{{ class_for_student_i.group_of_student.name|default_if_none:"" }}</td>
                                 <td>{{ class_for_student_i.present_check }}/{{ class_i.number_of_classes }}</td>
                                 <td name="invite_person">{{ class_for_student_i.invite_person|default_if_none:"" }}</td>
                                 <script>
                                     document.getElementById("student_in_class{{student.id}}@{{class_i.id}}").setAttribute("study_status", "{{ class_for_student_i.status |default_if_none:""}}")
                                     document.getElementById("student_in_class{{student.id}}@{{class_i.id}}").setAttribute("date_joined", "{{ class_for_student_i.get_joined_date |default_if_none:""}}")
-                                    document.getElementById("student_in_class{{student.id}}@{{class_i.id}}").setAttribute("group_of_student", "{{ class_for_student_i.group_of_student |default_if_none:""}}")
+                                    document.getElementById("student_in_class{{student.id}}@{{class_i.id}}").setAttribute("group_of_student", "{{ class_for_student_i.group_of_student.name |default_if_none:""}}")
                                     document.getElementById("student_in_class{{student.id}}@{{class_i.id}}").setAttribute("student_class_id", "{{ class_for_student_i.id }}")
                                 </script>
                             {% endif %}
@@ -242,7 +242,7 @@
                                     <input id="group_of_student_input" name="group_of_student_input" class="form-control" list="group_of_student_datalist">
                                     <datalist  name="group_of_student" id="group_of_student_datalist">
                                         {% for group_i in group_of_student %}
-                                            <option value="{{ group_i }}" id="{{ group_i }}"></option>
+                                            <option value="{{ group_i.name }}" id="{{ group_i.id }}"></option>
                                         {% endfor %}
                                     </datalist>
                                 </form>
@@ -399,6 +399,176 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="upgradeClassModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" class_id="" row_to_edit="">
+        {% csrf_token %}
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="upgradeClassModalTitle"></h4>
+                </div>
+                <div class="modal-body">
+                    <form id="fm" class="form-horizontal">
+                        <div class="form-group">
+                            <label for="name" class="col-sm-2 control-label">班級名稱</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" name="name" placeholder="班級名稱">
+                            </div>
+                        
+                            <label for="status" class="col-sm-2 control-label">班級狀態</label>
+                            <div class="col-sm-4">
+                                <input id="status_input" name="status_input" class="form-control" list="status_datalist" value="{{ class_i.status|default_if_none:"" }}">
+                                <datalist  name="status" id="status_datalist">
+                                    {% for status_i in class_status %}
+                                        <option value="{{status_i}}">{{ status_i }}</option>
+                                    {% endfor %}
+                                </datalist>
+                            </div>
+                            
+                            <label for="teacher" class="col-sm-2 control-label">指導師父</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" name="teacher" placeholder="負責師父" value="{{ class_i.teacher|default_if_none:"" }}">
+                            </div>
+                        
+                            <label for="supervisor" class="col-sm-2 control-label">監督</label>
+                            <div class="col-sm-4">
+                                <form>
+                                    <input id="supervisor_input" name="supervisor_input" class="form-control" list="supervisor_datalist" value="{{ class_i.supervisor|default_if_none:"" }}">
+                                    <datalist  name="supervisor" id="supervisor_datalist">
+                                        <option value="----" data-value="0"></option>
+                                        {% for student_i in student_all %}
+                                            <option value="{{ student_i.name }}" id="{{ student_i.id }}"></option>
+                                        {% endfor %}
+                                    </datalist>
+                                </form>
+                            </div>
+                        
+                            <label for="monitor" class="col-sm-2 control-label">總學員長</label>
+                            <div class="col-sm-4">
+                                <form>
+                                    <input id="monitor_input" name="monitor_input" class="form-control" list="monitor_datalist" value="{{ class_i.monitor|default_if_none:"" }}">
+                                    <datalist  name="monitor" id="monitor_datalist">
+                                        <option value="----" data-value="0"></option>
+                                        {% for student_i in student_all %}
+                                            <option value="{{ student_i.name }}" id="{{ student_i.id }}"></option>
+                                        {% endfor %}
+                                    </datalist>
+                                </form>
+                            </div>
+                            
+                            <label for="assistant_monitor1" class="col-sm-2 control-label">副總 1</label>
+                            <div class="col-sm-4">
+                                <form>
+                                    <input id="assistant_monitor1_input" name="assistant_monitor1_input" class="form-control" list="assistant_monitor1_datalist" value="{{ class_i.assistant_monitor1|default_if_none:"" }}">
+                                    <datalist  name="assistant_monitor1" id="assistant_monitor1_datalist">
+                                        <option value="----" data-value="0"></option>
+                                        {% for student_i in student_all %}
+                                            <option value="{{ student_i.name }}" id="{{ student_i.id }}"></option>
+                                        {% endfor %}
+                                    </datalist>
+                                </form>
+                            </div>
+                        
+                            <label for="assistant_monitor2" class="col-sm-2 control-label">副總 2</label>
+                            <div class="col-sm-4">
+                                <form>
+                                    <input id="assistant_monitor2_input" name="assistant_monitor2_input" class="form-control" list="assistant_monitor2_datalist" value="{{ class_i.assistant_monitor1|default_if_none:"" }}">
+                                    <datalist  name="assistant_monitor2" id="assistant_monitor2_datalist">
+                                        <option value="----" data-value="0"></option>
+                                        {% for student_i in student_all %}
+                                            <option value="{{ student_i.name }}" id="{{ student_i.id }}"></option>
+                                        {% endfor %}
+                                    </datalist>
+                                </form>
+                            </div>
+                            
+                            <label for="assistant_monitor3" class="col-sm-2 control-label">副總 3</label>
+                            <div class="col-sm-4">
+                                <form>
+                                    <input id="assistant_monitor3_input" name="assistant_monitor3_input" class="form-control" list="assistant_monitor3_datalist" value="{{ class_i.assistant_monitor1|default_if_none:"" }}">
+                                    <datalist  name="assistant_monitor3" id="assistant_monitor3_datalist">
+                                        <option value="----" data-value="0"></option>
+                                        {% for student_i in student_all %}
+                                            <option value="{{ student_i.name }}" id="{{ student_i.id }}"></option>
+                                        {% endfor %}
+                                    </datalist>
+                                </form>
+                            </div>
+                            
+                            <label for="number_of_classes" class="col-sm-2 control-label">總堂數</label>
+                            <div class="col-sm-2">
+                                <input type="number" value="0" class="form-control" name="number_of_classes" placeholder="總堂數" value="{{ class_i.number_of_classes|default_if_none:"" }}">
+                            </div>
+                            
+                            <label for="number_of_classes_to_graduate" class="col-sm-2 control-label">結業堂數</label>
+                            <div class="col-sm-2">
+                                <input type="number" value="0" class="form-control" name="number_of_classes_to_graduate" placeholder="結業堂數" value="{{ class_i.number_of_classes_to_graduate|default_if_none:"" }}">
+                            </div>
+                            
+                            <label for="number_of_classes_to_makeup" class="col-sm-2 control-label">補課最多</label>
+                            <div class="col-sm-2">
+                                <input type="number" value="0" class="form-control" name="number_of_classes_to_makeup" placeholder="補課最多" value="{{ class_i.number_of_classes_to_makeup|default_if_none:"" }}">
+                            </div>
+                            
+                            <label for="year" class="col-sm-2 control-label">年期</label>
+                            <div class="col-sm-2">
+                                <input type="number" class="form-control" name="year" placeholder="年期" value="{{ class_i.year|default_if_none:"" }}">
+                            </div>
+                            
+                            <label for="semester" class="col-sm-2 control-label">學期</label>
+                            <div class="col-sm-2">
+                                <select class="form-control" name="semester" placeholder="學期" value="{{ class_i.semester|default_if_none:"" }}">
+                                    {% for semester_i in semester %}
+                                        <option value="{{semester_i}}">{{ semester_i }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <label for="study_time" class="col-sm-2 control-label">上課時間</label>
+                            <div class="col-sm-2">
+                                <select class="form-control" name="study_time" placeholder="上課時間">
+                                    {% for study_time_i in study_time %}
+                                        <option value="{{study_time_i}}">{{ study_time_i }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <label for="start_date" class="col-sm-2 control-label">開始日期</label>
+                            <div class="col-sm-4">
+                                <input type="date" value="None" class="form-control" name="start_date" placeholder="開始日期">
+                            </div>
+                            <!--
+                            <label for="end_date" class="col-sm-2 control-label">結束日期</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control" name="end_date" placeholder="結束日期">
+                            </div>
+                            -->
+                            <label for="graduation_date" class="col-sm-2 control-label">領證日期</label>
+                            <div class="col-sm-4">
+                                <input type="date" value="None" class="form-control" name="graduation_date" placeholder="領證日期">
+                            </div>
+                        
+                            <label for="introduction" class="col-sm-2 control-label">簡介</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" name="introduction" placeholder="簡介">
+                            </div>
+                            <label for="auto_create_group" class="col-sm-2 control-label">自動產生堂</label>
+                            <div class="col-sm-1">
+                                <input type="checkbox" class="form-control" name="auto_create_group" checked>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <span id="upgradeClassMsg" style="color: red;"></span>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="btnUpgradeClassSave">儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
         $(function () {
             bindEvent();
@@ -410,7 +580,7 @@
             bindScheduledClassAddConfirm();
             bindClassGroupSave();
             bindEditClassGroup();
-            //bindEditConfirm();
+            bindUpgradeClassSave();
 
             //bindTestAjaxList();
         });
@@ -438,6 +608,11 @@
                 $('#addClassGroupModalTitle').text('建立組別');
                 $('#addClassGroupModal').attr('class_id', $(this).parent().parent().parent().parent().attr('nid'))
             })
+            $('#div_tb').on('click','.upgrade-class',function () {
+                $('#upgradeClassModalTitle').text('升級班級');
+                $('#upgradeClassModal').attr('upgrade_from', $(this).parent().parent().parent().parent().attr('nid'))
+                $('#upgradeClassModal').modal('show');
+            })
         }
     
     function bindAddStudentSave() {
@@ -446,6 +621,7 @@
                 var token = getCookie('csrftoken');
                 
                 onDlistInput($('#addStudentModal input[name="student_input"]')[0]);
+                onDlistInput($('#addStudentModal input[name="group_of_student_input"]')[0]);
                 onDlistInput($('#addStudentModal input[name="invite_person_input"]')[0]);
                 
                 $('#addStudentModal').find('input,select,datalist').each(function () {
@@ -476,8 +652,6 @@
                         // JSON.parse将字符串转换成字典， json.loads
                         var dict = JSON.parse(arg);
                         if(dict.status){
-                            //location.reload();
-                            //createRow(row_to_edit, postData, dict.nid, dict.status, dict.supervisor, dict.monitor, dict.assistant_monitor1, dict.assistant_monitor3, dict.study_time);
                             $('#addStudentModal').modal('hide');
                             window.location.reload();
                         }else {
@@ -673,6 +847,109 @@
                 $('#addClassGroupModal').attr('group_id', $(this).parent().parent().attr('nid'))
                 $('#addClassGroupModal').modal('show');
             })
+    }
+    function bindUpgradeClassSave() {
+            $('#btnUpgradeClassSave').click(function () {
+                var postData = {};
+                var token = getCookie('csrftoken');
+                
+                onDlistInput($('#upgradeClassModal input[name="status_input"]')[0]);
+                onDlistInput($('#upgradeClassModal input[name="supervisor_input"]')[0]);
+                onDlistInput($('#upgradeClassModal input[name="monitor_input"]')[0]);
+                onDlistInput($('#upgradeClassModal input[name="assistant_monitor1_input"]')[0]);
+                onDlistInput($('#upgradeClassModal input[name="assistant_monitor2_input"]')[0]);
+                onDlistInput($('#upgradeClassModal input[name="assistant_monitor3_input"]')[0]);
+                
+                $('#upgradeClassModal').find('input,select,datalist, checkbox').each(function () {
+                    var v = $(this).val();
+                    var n = $(this).attr('name');
+                    if(v != '')postData[n] = v;
+                    
+                    //checked
+                    if($(this)[0].type == 'checkbox'){
+                        postData[n] = $(this)[0].checked;
+                    }
+                    console.log(n)
+                    console.log(v)
+                    console.log('----')
+                });
+                
+                if(postData.name==''){
+                    $('#upgradeClassMsg').text('請填寫班級名稱');
+                    return
+                }
+                if(postData.year==''){
+                    $('#upgradeClassMsg').text('請填寫班的年期');
+                    return
+                }
+                if(postData.semester==''){
+                    $('#upgradeClassMsg').text('請填寫班的學期');
+                    return
+                }
+                if(postData.status=='-1'){
+                    $('#upgradeClassMsg').text('請填寫有效介班級狀態');
+                    return
+                }
+                if(postData.supervisor=='-1'){
+                    $('#upgradeClassMsg').text('請填寫有效介監督');
+                    return
+                }
+                console.log(postData.auto_create_group)
+                if(postData.auto_create_group == true){
+                    if(postData.start_date == '' || !postData.start_date){
+                        $('#upgradeClassMsg').text('選擇自動產生堂，必須填寫開始日期');
+                        return
+                    }
+                    if(postData.graduation_date == '' || !postData.graduation_date){
+                        $('#upgradeClassMsg').text('選擇自動產生堂，必須填寫領證日期');
+                        return
+                    }
+                    var x = new Date(postData.start_date);
+                    var y = new Date(postData.graduation_date);
+                    if(y < x){
+                        $('#upgradeClassMsg').text('開始日期或是領證日期選擇錯誤');
+                        return
+                    }
+
+                }
+                postData['is_upgrade'] = 'true'
+                postData['upgrade_from'] = $('#upgradeClassModal').attr('upgrade_from')
+                $.ajax({
+                    url: '/student/add_class',
+                    type: 'POST',
+                    headers:{'X-CSRFToken': token},
+                    data: postData,
+                    success:function (arg) {
+                        // arg是字符串
+                        // JSON.parse将字符串转换成字典， json.loads
+                        var dict = JSON.parse(arg);
+                        if(dict.status){
+                            //location.reload();
+                            var startDate = new Date(dict.start_date);
+                            var graduationDate = new Date(dict.graduation_date);
+                            var start_date_str = startDate.getFullYear() + "-" + (startDate.getMonth() + 1) + "-" + startDate.getDate()
+                            var graduation_date_str = graduationDate.getFullYear() + "-" + (graduationDate.getMonth() + 1) + "-" + graduationDate.getDate()
+                            classScheduleCreate("", dict.nid, start_date_str, graduation_date_str, token)
+                            /*
+                            while(startDate <= graduationDate){
+                                classScheduleCreate("", dict.nid, startDate.getFullYear() + "-" + (startDate.getMonth() + 1) + "-" + startDate.getDate(), token)
+                                console.log(startDate.getFullYear() + "-" + (startDate.getMonth() + 1) + "-" + startDate.getDate())
+                                startDate = new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+                            }
+                            */
+                            url_str = "{{request.build_absolute_uri}}"
+                            var n = url_str.lastIndexOf("/");
+                            var res = url_str.substring(0, n + 1) + dict.nid;
+                            $('#upgradeClassModal').modal('hide');
+                            window.location.assign(res)
+                            //window.location.reload();
+                        }else {
+                            $('#upgradeClassMsg').text(dict.message);
+                        }
+                    }
+                })
+
+            });
     }
     </script>
 {% endblock %}
